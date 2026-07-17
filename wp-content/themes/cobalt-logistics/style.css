@@ -1402,6 +1402,127 @@ button {
 }
 
 /* -----------------------------------------------------------
+   10b. Sticky CTA bar
+   Global bottom-fixed bar, markup in footer.php (present on every page).
+   Hidden by default (`aria-hidden="true"` + `tabindex="-1"` on its two
+   interactive children, set inline in the markup and kept in sync by
+   js/main.js). `.is-visible` is toggled entirely by JS via
+   IntersectionObserver — never by scroll position calculated here — once
+   the hero/page-hero has scrolled past, and removed again when
+   `.site-footer` approaches or the bar is dismissed. z-index sits below
+   `.nav-toggle` (110) and above the page content, but this bar and the
+   sticky `.site-header` (100) never occupy the viewport at the same
+   scroll extremes in a way that would conflict.
+----------------------------------------------------------- */
+.sticky-cta {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 90;
+	background: var(--paper);
+	border-top: 1px solid var(--line);
+	box-shadow: 0 -8px 24px rgba(16, 25, 42, 0.1);
+	transform: translateY(100%);
+	opacity: 0;
+	visibility: hidden;
+	transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+
+.sticky-cta.is-visible {
+	transform: translateY(0);
+	opacity: 1;
+	visibility: visible;
+	transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s linear 0s;
+}
+
+.sticky-cta__inner {
+	max-width: var(--max-width);
+	margin: 0 auto;
+	padding: 14px 20px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+}
+
+.sticky-cta__text {
+	margin: 0;
+	font-weight: 700;
+	color: var(--ink);
+}
+
+.sticky-cta__actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-shrink: 0;
+}
+
+.sticky-cta__link {
+	padding: 10px 22px;
+	font-size: 0.92rem;
+}
+
+.sticky-cta__close {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	flex-shrink: 0;
+	border: none;
+	background: transparent;
+	border-radius: 999px;
+	cursor: pointer;
+	transition: background 0.15s ease;
+}
+
+.sticky-cta__close:hover {
+	background: var(--cobalt-light);
+}
+
+.sticky-cta__close:focus-visible,
+.sticky-cta__link:focus-visible {
+	outline: 2px solid var(--cobalt);
+	outline-offset: 2px;
+}
+
+/* Close "×" drawn from two rotated bars, matching the .nav-toggle
+   hamburger / .faq-question__icon pattern elsewhere in this file rather
+   than an inline text glyph. */
+.sticky-cta__close-icon {
+	position: relative;
+	width: 16px;
+	height: 16px;
+}
+
+.sticky-cta__close-icon::before,
+.sticky-cta__close-icon::after {
+	content: "";
+	position: absolute;
+	top: 7px;
+	left: 0;
+	width: 16px;
+	height: 2px;
+	background: var(--ink-muted);
+	transition: background 0.15s ease;
+}
+
+.sticky-cta__close-icon::before {
+	transform: rotate(45deg);
+}
+
+.sticky-cta__close-icon::after {
+	transform: rotate(-45deg);
+}
+
+.sticky-cta__close:hover .sticky-cta__close-icon::before,
+.sticky-cta__close:hover .sticky-cta__close-icon::after {
+	background: var(--cobalt);
+}
+
+/* -----------------------------------------------------------
    11. Reveal animations
    Two variants, because "fade in on scroll" only makes sense for content
    that starts outside the viewport:
@@ -1611,6 +1732,30 @@ button {
 	.section {
 		padding: 48px 0;
 	}
+
+	.sticky-cta__inner {
+		padding: 12px 20px;
+		gap: 12px;
+	}
+
+	.sticky-cta__text {
+		font-size: 0.9rem;
+	}
+}
+
+/* Sticky CTA bar: below ~480px the text + button + close no longer fit on
+   one line without crowding, so it stacks (text above, CTA+close row
+   below) rather than truncating the message. */
+@media (max-width: 480px) {
+	.sticky-cta__inner {
+		flex-direction: column;
+		align-items: stretch;
+		text-align: center;
+	}
+
+	.sticky-cta__actions {
+		justify-content: center;
+	}
 }
 
 /* -----------------------------------------------------------
@@ -1640,5 +1785,18 @@ button {
 		transform: none;
 		transition: none;
 		animation: none;
+	}
+
+	/* The sticky CTA bar's own JS logic (show/hide triggers, dismissal) is
+	   unaffected by this — only the slide+fade transition is removed, so
+	   `.is-visible` toggles instantly instead of animating.
+	   Both selectors are needed: `.sticky-cta.is-visible` (two classes) has
+	   higher specificity than a lone `.sticky-cta` in the base rules above,
+	   so without repeating it here the *show* transition would still run
+	   under reduced motion even though the *hide* transition correctly
+	   didn't. */
+	.sticky-cta,
+	.sticky-cta.is-visible {
+		transition: none;
 	}
 }

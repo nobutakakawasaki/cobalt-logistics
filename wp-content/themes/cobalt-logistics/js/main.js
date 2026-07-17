@@ -351,4 +351,114 @@
 
 		recalcSimulator();
 	}
+
+	// Sticky CTA bar (markup in footer.php, present on every page). Shows
+	// once the hero (`.hero` on HOME, `.page-hero` on inner pages) has
+	// scrolled out of view, auto-hides again when `.site-footer` comes
+	// into view so the two never overlap, and can be dismissed for the
+	// rest of the browser session via the close button (sessionStorage).
+	// Deliberately IntersectionObserver-only — no scroll/mousemove
+	// listeners, per the brief. The bar starts hidden in the markup itself
+	// (aria-hidden="true", tabindex="-1" on its link/close button), so if
+	// this whole block never runs (no JS, no IntersectionObserver) it just
+	// stays hidden rather than appearing stuck open.
+	var stickyCta = document.getElementById( 'sticky-cta' );
+
+	if ( stickyCta ) {
+		var STICKY_CTA_DISMISS_KEY = 'cobaltStickyCtaDismissed';
+		var stickyCtaLink = stickyCta.querySelector( '.sticky-cta__link' );
+		var stickyCtaCloseBtn = stickyCta.querySelector( '.sticky-cta__close' );
+		var stickyCtaFocusables = [ stickyCtaLink, stickyCtaCloseBtn ].filter( function ( el ) {
+			return !! el;
+		} );
+
+		var stickyCtaDismissed = false;
+		try {
+			stickyCtaDismissed = window.sessionStorage.getItem( STICKY_CTA_DISMISS_KEY ) === '1';
+		} catch ( e ) {
+			// sessionStorage can throw (private browsing / disabled storage) —
+			// fail open, i.e. treat as "not dismissed" for this page view.
+			stickyCtaDismissed = false;
+		}
+
+		var stickyCtaHeroPassed = false;
+		var stickyCtaFooterNear = false;
+
+		function setStickyCtaVisible( visible ) {
+			if ( ! visible ) {
+				// A keyboard user may have tabbed to the link/close button while
+				// the bar was visible, then triggered a hide (e.g. scrolling on
+				// toward the footer). Applying aria-hidden to an ancestor of the
+				// still-focused element is an ARIA violation browsers react to
+				// unpredictably (Chrome force-blurs to <body> with a console
+				// warning) — so explicitly move focus out first.
+				if ( stickyCta.contains( document.activeElement ) ) {
+					document.activeElement.blur();
+				}
+			}
+			stickyCta.classList.toggle( 'is-visible', visible );
+			stickyCta.setAttribute( 'aria-hidden', visible ? 'false' : 'true' );
+			stickyCtaFocusables.forEach( function ( el ) {
+				if ( visible ) {
+					el.removeAttribute( 'tabindex' );
+				} else {
+					el.setAttribute( 'tabindex', '-1' );
+				}
+			} );
+		}
+
+		function updateStickyCtaVisibility() {
+			if ( stickyCtaDismissed ) {
+				setStickyCtaVisible( false );
+				return;
+			}
+			setStickyCtaVisible( stickyCtaHeroPassed && ! stickyCtaFooterNear );
+		}
+
+		if ( stickyCtaCloseBtn ) {
+			stickyCtaCloseBtn.addEventListener( 'click', function () {
+				stickyCtaDismissed = true;
+				try {
+					window.sessionStorage.setItem( STICKY_CTA_DISMISS_KEY, '1' );
+				} catch ( e ) {
+					// Ignore write failures — the bar still hides for the rest
+					// of this page view either way, it just won't stay hidden
+					// after a reload.
+				}
+				updateStickyCtaVisibility();
+			} );
+		}
+
+		if ( ! stickyCtaDismissed && 'IntersectionObserver' in window ) {
+			var stickyCtaHeroTarget = document.querySelector( '.hero, .page-hero' );
+
+			if ( stickyCtaHeroTarget ) {
+				var stickyCtaHeroObserver = new IntersectionObserver(
+					function ( entries ) {
+						entries.forEach( function ( entry ) {
+							stickyCtaHeroPassed = ! entry.isIntersecting;
+							updateStickyCtaVisibility();
+						} );
+					},
+					{ threshold: 0 }
+				);
+				stickyCtaHeroObserver.observe( stickyCtaHeroTarget );
+			}
+
+			var stickyCtaFooterTarget = document.querySelector( '.site-footer' );
+
+			if ( stickyCtaFooterTarget ) {
+				var stickyCtaFooterObserver = new IntersectionObserver(
+					function ( entries ) {
+						entries.forEach( function ( entry ) {
+							stickyCtaFooterNear = entry.isIntersecting;
+							updateStickyCtaVisibility();
+						} );
+					},
+					{ threshold: 0 }
+				);
+				stickyCtaFooterObserver.observe( stickyCtaFooterTarget );
+			}
+		}
+	}
 } )();

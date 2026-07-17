@@ -49,6 +49,28 @@
 		</div>
 	</footer>
 
+	<?php
+	/**
+	 * Sticky CTA bar. Lives here (not header.php) because its
+	 * show/hide behaviour in js/main.js needs `.site-footer` to already
+	 * exist in the DOM to observe it, and this keeps the bar's markup next
+	 * to the footer it watches. Hidden by default (aria-hidden="true",
+	 * tabindex="-1" on both interactive children) — js/main.js reveals it
+	 * once the hero/page-hero has scrolled past, per STICKY_CTA_BRIEF.md.
+	 */
+	?>
+	<div class="sticky-cta" id="sticky-cta" role="region" aria-label="お問い合わせバナー" aria-hidden="true">
+		<div class="sticky-cta__inner">
+			<p class="sticky-cta__text">物流のご相談はお気軽に</p>
+			<div class="sticky-cta__actions">
+				<a class="btn btn--solid sticky-cta__link" href="<?php echo esc_url( cobalt_logistics_page_url( 'home' ) . '#contact' ); ?>" tabindex="-1">お問い合わせ</a>
+				<button class="sticky-cta__close" type="button" aria-label="閉じる" tabindex="-1">
+					<span class="sticky-cta__close-icon" aria-hidden="true"></span>
+				</button>
+			</div>
+		</div>
+	</div>
+
 <?php wp_footer(); ?>
 </body>
 </html>
