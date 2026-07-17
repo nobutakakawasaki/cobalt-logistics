@@ -71,6 +71,16 @@ get_header();
 		</div>
 	</section>
 
+	<section class="section">
+		<div class="container">
+			<h2 class="section-title">代表メッセージ</h2>
+			<div class="ceo-message">
+				<p class="ceo-message__text">EC市場の成長にともない、「物流」は事業拡大のボトルネックにも、競争力の源泉にもなり得る領域になりました。私たちは倉庫保管から出荷、返品対応までを一括で引き受けることで、お客様が本来注力すべき商品開発や販売戦略に集中できる環境をつくりたいと考えています。現場のオペレーション精度と、変化に対応できる柔軟さ。その両方を大切にしながら、一社一社に向き合ってまいります。</p>
+				<p class="ceo-message__name">代表取締役　神谷 悠真</p>
+			</div>
+		</div>
+	</section>
+
 	<section class="section section--alt">
 		<div class="container">
 			<h2 class="section-title">沿革</h2>

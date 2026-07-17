@@ -4,7 +4,7 @@ Theme URI: https://example.com/cobalt-logistics
 Author: 5kimac
 Author URI: https://example.com
 Description: コバルト物流株式会社 コーポレートサイト用クラシックPHPテーマ（架空クライアント想定のポートフォリオデモ制作）。
-Version: 1.5.1
+Version: 1.6.0
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: cobalt-logistics
@@ -994,6 +994,25 @@ button {
 	text-align: center;
 }
 
+.ceo-message {
+	max-width: 720px;
+	margin: 0 auto;
+	border-left: 3px solid var(--cobalt);
+	padding-left: 28px;
+}
+
+.ceo-message__text {
+	font-size: 1.02rem;
+	line-height: 2;
+	margin-bottom: 16px;
+}
+
+.ceo-message__name {
+	font-weight: 700;
+	color: var(--ink-muted);
+	margin: 0;
+}
+
 .timeline {
 	max-width: 720px;
 	margin: 0 auto;
@@ -1185,6 +1204,39 @@ button {
 	color: var(--ink-muted);
 	font-size: 0.9rem;
 	margin: 0;
+}
+
+.voice-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 20px;
+}
+
+.voice-card {
+	background: var(--paper);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 24px;
+}
+
+.voice-card__text {
+	font-size: 0.92rem;
+	line-height: 1.9;
+	margin-bottom: 14px;
+}
+
+.voice-card__meta {
+	font-size: 0.85rem;
+	color: var(--ink-muted);
+	font-weight: 600;
+	margin: 0;
+}
+
+.voice-grid__disclaimer {
+	text-align: center;
+	font-size: 0.8rem;
+	color: var(--ink-muted);
+	margin: 20px 0 0;
 }
 
 /* -----------------------------------------------------------
@@ -1783,6 +1835,14 @@ button {
 
 	.perks-grid {
 		grid-template-columns: 1fr;
+	}
+
+	.voice-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.ceo-message {
+		padding-left: 18px;
 	}
 
 	.job-card {
