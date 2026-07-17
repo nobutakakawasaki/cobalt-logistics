@@ -35,6 +35,7 @@ $cobalt_faqs = array(
 
 	<section class="page-hero">
 		<div class="container">
+			<p class="eyebrow">FAQ</p>
 			<h1 class="page-hero__title">よくあるご質問</h1>
 			<p class="page-hero__lead">お問い合わせの多いご質問をまとめました。</p>
 		</div>

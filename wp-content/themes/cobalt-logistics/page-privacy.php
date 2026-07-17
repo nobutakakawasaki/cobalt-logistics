@@ -12,6 +12,7 @@ get_header();
 
 	<section class="page-hero">
 		<div class="container">
+			<p class="eyebrow">PRIVACY POLICY</p>
 			<h1 class="page-hero__title">プライバシーポリシー</h1>
 			<p class="page-hero__lead">コバルト物流株式会社（以下「当社」といいます）の個人情報の取り扱いについて</p>
 		</div>

@@ -13,45 +13,43 @@ get_header();
 	<section class="hero">
 		<div class="hero-blob hero-blob--1" aria-hidden="true"></div>
 		<div class="hero-blob hero-blob--2" aria-hidden="true"></div>
+		<svg class="hero-route" viewBox="0 0 1000 460" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+			<path id="hero-route-path" class="hero-route__path" d="M -40 360 C 140 300 200 420 380 350 S 620 210 760 270 S 960 150 1040 90"></path>
+			<circle id="hero-route-dot" class="hero-route__dot" cx="380" cy="350" r="5"></circle>
+		</svg>
 		<div class="hero__inner">
-			<h1 class="hero__title">物流の"面倒"を、まるごと引き受ける。</h1>
-			<p class="hero__lead">入庫から出荷まで。EC事業者の物流を、コバルト物流がワンストップで支えます。</p>
-			<div class="hero__buttons">
-				<a class="btn btn--primary" href="#contact">資料請求はこちら</a>
-				<a class="btn btn--outline" href="<?php echo esc_url( cobalt_logistics_page_url( 'warehouse' ) ); ?>">倉庫見学のお問い合わせ</a>
-			</div>
-		</div>
-	</section>
-
-	<section class="section">
-		<div class="container">
-			<div class="stats-grid">
-				<div class="stat-card">
-					<div class="stat-icon"><?php cobalt_logistics_icon( 'building' ); ?></div>
-					<p class="stat-number">180社+</p>
-					<p class="stat-label">導入企業数</p>
-				</div>
-				<div class="stat-card">
-					<div class="stat-icon"><?php cobalt_logistics_icon( 'target' ); ?></div>
-					<p class="stat-number">99.98%</p>
-					<p class="stat-label">出荷精度</p>
-				</div>
-				<div class="stat-card">
-					<div class="stat-icon"><?php cobalt_logistics_icon( 'area' ); ?></div>
-					<p class="stat-number">12,000坪</p>
-					<p class="stat-label">対応倉庫面積</p>
-				</div>
-				<div class="stat-card">
-					<div class="stat-icon"><?php cobalt_logistics_icon( 'clock' ); ?></div>
-					<p class="stat-number">13年</p>
-					<p class="stat-label">稼働年数</p>
+			<div class="hero__content">
+				<h1 class="hero__title">物流の"面倒"を、まるごと引き受ける。</h1>
+				<p class="hero__lead">入庫から出荷まで。EC事業者の物流を、コバルト物流がワンストップで支えます。</p>
+				<div class="hero__buttons">
+					<a class="btn btn--primary" href="#contact">資料請求はこちら</a>
+					<a class="btn btn--outline" href="<?php echo esc_url( cobalt_logistics_page_url( 'warehouse' ) ); ?>">倉庫見学のお問い合わせ</a>
 				</div>
 			</div>
+			<ul class="hero-manifest" aria-label="導入実績">
+				<li class="hero-manifest__item reveal">
+					<span class="stat-label">導入企業数</span>
+					<span class="stat-number">180社+</span>
+				</li>
+				<li class="hero-manifest__item reveal">
+					<span class="stat-label">出荷精度</span>
+					<span class="stat-number">99.98%</span>
+				</li>
+				<li class="hero-manifest__item reveal">
+					<span class="stat-label">対応倉庫面積</span>
+					<span class="stat-number">12,000坪</span>
+				</li>
+				<li class="hero-manifest__item reveal">
+					<span class="stat-label">稼働年数</span>
+					<span class="stat-number">13年</span>
+				</li>
+			</ul>
 		</div>
 	</section>
 
 	<section class="section section--alt">
 		<div class="container">
+			<p class="eyebrow">SERVICES</p>
 			<h2 class="section-title">サービス紹介</h2>
 			<p class="section-lead">EC事業者の物流業務を、入庫から出荷・返品対応まで一括でサポートします。</p>
 			<div class="services-grid">

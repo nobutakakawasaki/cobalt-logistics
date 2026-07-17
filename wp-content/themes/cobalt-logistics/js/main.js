@@ -5,6 +5,15 @@
 ( function () {
 	'use strict';
 
+	// Progressive-enhancement marker for the .reveal scroll-reveal effect
+	// (see style.css section 11): .reveal renders fully visible by default,
+	// and is only pre-hidden for the fade-in animation once this class is
+	// present. This is the very first statement in the script, before
+	// anything that could throw, so a JS error further down (or JS being
+	// blocked/disabled entirely) never leaves the hero stats / timeline
+	// content stuck invisible.
+	document.documentElement.classList.add( 'js-reveal-ready' );
+
 	// Mobile hamburger navigation toggle.
 	var navToggle = document.querySelector( '.nav-toggle' );
 	var mainNav = document.querySelector( '.main-nav' );
@@ -194,6 +203,70 @@
 		} );
 	}
 
+	// Signature "route line" motif (HOME hero): a small dot travels along
+	// the dashed SVG path in a gentle loop. This is a self-running
+	// background loop, not a cursor interaction, so it's gated on
+	// prefers-reduced-motion only (not the coarse-pointer check used for
+	// the cursor-follow effects above) — touch users still see it play.
+	// Under reduced motion we simply never start the rAF loop, leaving
+	// the dot at the static cx/cy already baked into the SVG markup, so
+	// the route line still renders as a dashed path + stationary dot
+	// rather than disappearing.
+	var routePath = document.getElementById( 'hero-route-path' );
+	var routeDot = document.getElementById( 'hero-route-dot' );
+
+	if ( routePath && routeDot && ! prefersReducedMotion ) {
+		var routeLength = routePath.getTotalLength();
+		var routeDurationMs = 9000; // one full loop along the path
+		var routeStartTime = null;
+
+		function animateRouteDot( timestamp ) {
+			if ( routeStartTime === null ) {
+				routeStartTime = timestamp;
+			}
+			var elapsed = ( timestamp - routeStartTime ) % routeDurationMs;
+			var progress = elapsed / routeDurationMs;
+			var point = routePath.getPointAtLength( progress * routeLength );
+			routeDot.setAttribute( 'cx', point.x );
+			routeDot.setAttribute( 'cy', point.y );
+			requestAnimationFrame( animateRouteDot );
+		}
+
+		requestAnimationFrame( animateRouteDot );
+	}
+
+	// Scroll reveal: the hero manifest stats and the 沿革 timeline items
+	// fade + slide in the first time they enter the viewport. Reduced
+	// motion is handled primarily in CSS (`.reveal` is already fully
+	// visible under that media query), and mirrored here so browsers
+	// without IntersectionObserver support get the same "just show it"
+	// fallback instead of content stuck invisible.
+	var revealTargets = document.querySelectorAll( '.reveal' );
+
+	if ( revealTargets.length ) {
+		if ( prefersReducedMotion || ! ( 'IntersectionObserver' in window ) ) {
+			revealTargets.forEach( function ( target ) {
+				target.classList.add( 'is-visible' );
+			} );
+		} else {
+			var revealObserver = new IntersectionObserver(
+				function ( entries, observer ) {
+					entries.forEach( function ( entry ) {
+						if ( entry.isIntersecting ) {
+							entry.target.classList.add( 'is-visible' );
+							observer.unobserve( entry.target );
+						}
+					} );
+				},
+				{ threshold: 0.15 }
+			);
+
+			revealTargets.forEach( function ( target ) {
+				revealObserver.observe( target );
+			} );
+		}
+	}
+
 	// HOME contact form: client-side validation in addition to the
 	// server-side checks in functions.php. Only blocks submission when a
 	// required field is missing/invalid; otherwise the real POST to
@@ -230,5 +303,53 @@
 				contactFormError.hidden = true;
 			}
 		} );
+	}
+
+	// Pricing simulator (サービス概要 / page-service.php only — these
+	// elements simply don't exist on other pages, so this whole block is
+	// a no-op there). Recalculates the estimated monthly total on every
+	// `input` event from the three controls; there is no submit step.
+	var simShipments = document.getElementById( 'sim-shipments' );
+	var simStorage = document.getElementById( 'sim-storage' );
+	var simProcessing = document.getElementById( 'sim-processing' );
+
+	if ( simShipments && simStorage && simProcessing ) {
+		var simShipmentsValue = document.getElementById( 'sim-shipments-value' );
+		var simStorageValue = document.getElementById( 'sim-storage-value' );
+		var simTotalLow = document.getElementById( 'sim-total-low' );
+		var simTotalHigh = document.getElementById( 'sim-total-high' );
+
+		var SIM_PRICE_PER_SHIPMENT = 250;
+		var SIM_PRICE_PER_TSUBO = 3000;
+		var SIM_PROCESSING_OPTION_PRICE = 50000;
+		var SIM_RANGE_SPREAD = 0.15; // display the total as a simple +-15% estimate range
+
+		function formatSimYen( amount ) {
+			return Math.round( amount ).toLocaleString( 'ja-JP' );
+		}
+
+		function recalcSimulator() {
+			var shipments = parseInt( simShipments.value, 10 ) || 0;
+			var storage = parseInt( simStorage.value, 10 ) || 0;
+			var total = shipments * SIM_PRICE_PER_SHIPMENT + storage * SIM_PRICE_PER_TSUBO;
+
+			if ( simProcessing.checked ) {
+				total += SIM_PROCESSING_OPTION_PRICE;
+			}
+
+			var low = total * ( 1 - SIM_RANGE_SPREAD );
+			var high = total * ( 1 + SIM_RANGE_SPREAD );
+
+			simShipmentsValue.textContent = shipments.toLocaleString( 'ja-JP' ) + '件';
+			simStorageValue.textContent = storage.toLocaleString( 'ja-JP' ) + '坪';
+			simTotalLow.textContent = formatSimYen( low );
+			simTotalHigh.textContent = formatSimYen( high );
+		}
+
+		simShipments.addEventListener( 'input', recalcSimulator );
+		simStorage.addEventListener( 'input', recalcSimulator );
+		simProcessing.addEventListener( 'input', recalcSimulator );
+
+		recalcSimulator();
 	}
 } )();

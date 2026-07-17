@@ -12,6 +12,7 @@ get_header();
 
 	<section class="page-hero">
 		<div class="container">
+			<p class="eyebrow">COMPANY</p>
 			<h1 class="page-hero__title">会社概要</h1>
 			<p class="page-hero__lead">コバルト物流株式会社の会社情報をご紹介します。</p>
 		</div>
@@ -74,23 +75,23 @@ get_header();
 		<div class="container">
 			<h2 class="section-title">沿革</h2>
 			<div class="timeline">
-				<div class="timeline__item">
+				<div class="timeline__item reveal">
 					<p class="timeline__year">2012年4月</p>
 					<p class="timeline__text">横浜市鶴見区にて創業、倉庫保管業を開始</p>
 				</div>
-				<div class="timeline__item">
+				<div class="timeline__item reveal">
 					<p class="timeline__year">2015年</p>
 					<p class="timeline__text">EC物流代行サービスを開始</p>
 				</div>
-				<div class="timeline__item">
+				<div class="timeline__item reveal">
 					<p class="timeline__year">2018年</p>
 					<p class="timeline__text">倉庫面積を拡張、WMS導入</p>
 				</div>
-				<div class="timeline__item">
+				<div class="timeline__item reveal">
 					<p class="timeline__year">2021年</p>
 					<p class="timeline__text">流通加工サービスを開始</p>
 				</div>
-				<div class="timeline__item">
+				<div class="timeline__item reveal">
 					<p class="timeline__year">2024年</p>
 					<p class="timeline__text">導入企業180社突破</p>
 				</div>

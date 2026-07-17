@@ -12,6 +12,7 @@ get_header();
 
 	<section class="page-hero">
 		<div class="container">
+			<p class="eyebrow">OUR SERVICES</p>
 			<h1 class="page-hero__title">サービス概要</h1>
 			<p class="page-hero__lead">EC事業者の物流業務を、入庫から出荷・返品対応まで一括でサポートします。</p>
 		</div>
@@ -50,6 +51,49 @@ get_header();
 
 			<div class="pricing-note">
 				<p><strong>料金体系について</strong><br>取扱商材・出荷量によりお見積りが異なります。まずはお気軽にお問い合わせください。</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="section section--alt">
+		<div class="container">
+			<h2 class="section-title">概算料金シミュレーター</h2>
+			<p class="section-lead">出荷件数・保管坪数・オプションを動かすと、月額の概算費用がリアルタイムで再計算されます。</p>
+
+			<div class="simulator">
+				<div class="simulator__inputs">
+					<div class="simulator__field">
+						<div class="simulator__field-head">
+							<label for="sim-shipments">月間出荷件数</label>
+							<span class="simulator__field-value" id="sim-shipments-value">1,000件</span>
+						</div>
+						<input type="range" id="sim-shipments" name="sim-shipments" min="100" max="5000" step="50" value="1000" aria-describedby="sim-shipments-value">
+					</div>
+
+					<div class="simulator__field">
+						<div class="simulator__field-head">
+							<label for="sim-storage">保管坪数</label>
+							<span class="simulator__field-value" id="sim-storage-value">50坪</span>
+						</div>
+						<input type="range" id="sim-storage" name="sim-storage" min="10" max="200" step="5" value="50" aria-describedby="sim-storage-value">
+					</div>
+
+					<div class="simulator__field simulator__field--checkbox">
+						<label for="sim-processing">
+							<input type="checkbox" id="sim-processing" name="sim-processing">
+							流通加工オプションを追加する
+						</label>
+					</div>
+				</div>
+
+				<div class="simulator__result">
+					<p class="simulator__result-label">月額概算</p>
+					<p class="simulator__result-value" aria-live="polite">
+						¥<span id="sim-total-low">340,000</span>〜¥<span id="sim-total-high">460,000</span>
+					</p>
+					<p class="simulator__disclaimer">上記はデモ用の簡易試算です。実際の料金は商材・出荷量により異なります。正式なお見積もりはお問い合わせください。</p>
+					<a class="btn btn--solid" href="<?php echo esc_url( cobalt_logistics_page_url( 'home' ) . '#contact' ); ?>">お問い合わせへ</a>
+				</div>
 			</div>
 		</div>
 	</section>

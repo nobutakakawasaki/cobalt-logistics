@@ -12,6 +12,7 @@ get_header();
 
 	<section class="page-hero">
 		<div class="container">
+			<p class="eyebrow">CAREERS</p>
 			<h1 class="page-hero__title">採用情報</h1>
 			<p class="page-hero__lead">コバルト物流は、EC事業者の"物流の裏側"を支えるチームです。現場スタッフから管理職まで、幅広く仲間を募集しています。</p>
 		</div>

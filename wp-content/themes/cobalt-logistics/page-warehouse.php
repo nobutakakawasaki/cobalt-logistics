@@ -12,6 +12,7 @@ get_header();
 
 	<section class="page-hero">
 		<div class="container">
+			<p class="eyebrow">FACILITY</p>
 			<h1 class="page-hero__title">倉庫概要</h1>
 			<p class="page-hero__lead">本社倉庫の設備・対応商材についてご紹介します。</p>
 		</div>
