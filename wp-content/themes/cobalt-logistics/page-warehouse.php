@@ -18,6 +18,16 @@ get_header();
 		</div>
 	</section>
 
+	<section class="warehouse-band">
+		<img
+			src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/facility-exterior.jpg' ); ?>"
+			alt="夕方の倉庫外観。荷捌きバースにトラックが並んでいる様子"
+			width="1600"
+			height="893"
+			class="warehouse-band__img"
+		>
+	</section>
+
 	<section class="section">
 		<div class="container">
 			<dl class="spec-list">
@@ -46,10 +56,22 @@ get_header();
 				</div>
 			</dl>
 
-			<div class="cta-banner" style="margin-top: 48px;">
-				<h2 class="cta-banner__title">見学のお申し込み</h2>
-				<p style="margin-bottom: 20px;">倉庫見学は随時受け付けております。お気軽にお問い合わせください。</p>
-				<a class="btn btn--primary" href="<?php echo esc_url( home_url( '/#contact' ) ); ?>">お問い合わせはこちら</a>
+			<div class="warehouse-tour">
+				<div class="warehouse-tour__media">
+					<img
+						src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/warehouse-interior.jpg' ); ?>"
+						alt="青いラッキング什器が並ぶ倉庫内の通路"
+						width="1600"
+						height="893"
+						loading="lazy"
+						class="warehouse-tour__img"
+					>
+				</div>
+				<div class="cta-banner warehouse-tour__cta">
+					<h2 class="cta-banner__title">見学のお申し込み</h2>
+					<p style="margin-bottom: 20px;">倉庫見学は随時受け付けております。お気軽にお問い合わせください。</p>
+					<a class="btn btn--primary" href="<?php echo esc_url( home_url( '/#contact' ) ); ?>">お問い合わせはこちら</a>
+				</div>
 			</div>
 		</div>
 	</section>

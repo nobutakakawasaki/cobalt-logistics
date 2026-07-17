@@ -82,6 +82,58 @@ get_header();
 
 	<section class="section">
 		<div class="container">
+			<p class="eyebrow">CASE STUDIES</p>
+			<h2 class="section-title">導入事例</h2>
+			<div class="case-studies-grid">
+				<div class="case-study-card reveal">
+					<p class="case-study-card__label font-mono">アパレルEC</p>
+					<h3 class="case-study-card__title">アパレルECサイト運営会社</h3>
+					<dl class="case-study-card__body">
+						<div class="case-study-card__row">
+							<dt>課題</dt>
+							<dd>繁忙期の出荷遅延とスタッフ確保の難しさ</dd>
+						</div>
+						<div class="case-study-card__row">
+							<dt>効果</dt>
+							<dd>出荷リードタイムを最短当日出荷に短縮、繁忙期でも誤出荷率0.1%以下を維持</dd>
+						</div>
+					</dl>
+				</div>
+				<div class="case-study-card reveal">
+					<p class="case-study-card__label font-mono">食品・雑貨</p>
+					<h3 class="case-study-card__title">食品・雑貨の通販事業者</h3>
+					<dl class="case-study-card__body">
+						<div class="case-study-card__row">
+							<dt>課題</dt>
+							<dd>温度管理が必要な商材の保管先探しに苦労していた</dd>
+						</div>
+						<div class="case-study-card__row">
+							<dt>効果</dt>
+							<dd>温湿度管理エリアでの一括保管により、品質関連のクレームが大幅減少</dd>
+						</div>
+					</dl>
+				</div>
+				<div class="case-study-card reveal">
+					<p class="case-study-card__label font-mono">化粧品</p>
+					<h3 class="case-study-card__title">化粧品ブランド(D2Cメーカー)</h3>
+					<dl class="case-study-card__body">
+						<div class="case-study-card__row">
+							<dt>課題</dt>
+							<dd>急成長にともなう出荷キャパシティ不足</dd>
+						</div>
+						<div class="case-study-card__row">
+							<dt>効果</dt>
+							<dd>WMS連携により出荷件数が増えても誤出荷ゼロを維持、追加人員採用なしで対応</dd>
+						</div>
+					</dl>
+				</div>
+			</div>
+			<p class="case-studies-disclaimer">※ 掲載の事例はデモ用に作成した架空の事例です。</p>
+		</div>
+	</section>
+
+	<section class="section">
+		<div class="container">
 			<div class="cta-banner">
 				<h2 class="cta-banner__title">一緒に物流の"当たり前"を支えませんか</h2>
 				<a class="btn btn--primary" href="<?php echo esc_url( cobalt_logistics_page_url( 'recruit' ) ); ?>">採用情報を見る</a>

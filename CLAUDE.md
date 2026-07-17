@@ -12,6 +12,23 @@
 
 作品集に載せる際は「架空クライアント想定のデモ制作」であることを明記する。
 
+## 画像について(2026-07-17追記)
+
+当初「外部画像・素材は使わない」方針だったが、参考サイトとの品質差を埋めるため、
+`gemini-image` スキル(Google Gemini/Imagen経由のAI画像生成)で**オリジナル生成した
+写真素材**を追加する方針に変更した。実在する倉庫・企業の写真を無断使用しているわけ
+ではなく、すべて生成AIによる架空の情景。実在ブランドのロゴ・識別可能な人物の顔が
+写り込んでいないか毎回確認してから採用すること(1回目の生成で実在ブランド"Scotch 3M"
+が写り込んだケース・顔がはっきり写ったケースがあり、プロンプトを修正して再生成した)。
+
+- APIキーは `~/projects/web/cobalt-logistics/.env`(gitignore済み、`GOOGLE_API_KEY=`)
+- 生成画像は `wp-content/themes/cobalt-logistics/assets/images/` に配置し、通常どおり
+  gitコミット対象とする(これはオリジナルコンテンツであり、ライセンス制約のある
+  外部素材ではないため)
+- 生成コマンド例: `node /Users/5kimac/.claude/skills/gemini-image/scripts/generate_image.js "prompt" --model gemini-3.1-flash-image-preview --aspect 16:9 --size 2K --output-dir <dir>`
+  (`imagen-4.0-generate-001` は新規ユーザー向けに廃止済み、`gemini-3.1-flash-image-preview`
+  を使うこと)
+
 ## 技術スタック
 
 - クラシックPHPテーマ（ブロックテーマではない）。募集要件が「ワードプレスでコーディング」と

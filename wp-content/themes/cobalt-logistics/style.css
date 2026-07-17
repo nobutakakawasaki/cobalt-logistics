@@ -606,6 +606,27 @@ button {
 	margin: 0;
 }
 
+/* Modifier for the three .service-detail blocks (page-service.php) that
+   carry a photo (EC物流代行 / 倉庫保管・在庫管理 / 輸配送手配). 流通加工
+   is left without this modifier — deliberately image-less, see
+   page-service.php comments / IMAGE_BRIEF.md. */
+.service-detail--media {
+	grid-template-columns: 56px 1fr 200px;
+	align-items: center;
+}
+
+.service-detail__media {
+	border-radius: var(--radius);
+	overflow: hidden;
+	aspect-ratio: 4 / 3;
+}
+
+.service-detail__img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
 .pricing-note {
 	margin-top: 40px;
 	background: var(--cobalt-light);
@@ -741,6 +762,73 @@ button {
 	color: var(--ink-muted);
 	max-width: 520px;
 	margin: 0 auto 20px;
+}
+
+/* -----------------------------------------------------------
+   4c. Case studies (page-home.php, 導入事例)
+   Text-only cards, no photos — see IMAGE_BRIEF.md. Intentionally not
+   numbered (01/02/03), same rule as .eyebrow above.
+----------------------------------------------------------- */
+.case-studies-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 24px;
+}
+
+.case-study-card {
+	background: var(--paper);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 28px 24px;
+	box-shadow: var(--shadow);
+}
+
+.case-study-card__label {
+	color: var(--cobalt);
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	margin: 0 0 10px;
+}
+
+.case-study-card__title {
+	font-size: 1.05rem;
+	margin-bottom: 18px;
+}
+
+.case-study-card__body {
+	margin: 0;
+	display: grid;
+	gap: 14px;
+}
+
+.case-study-card__row dt {
+	font-weight: 700;
+	color: var(--cobalt-deep);
+	font-size: 0.85rem;
+	margin-bottom: 4px;
+}
+
+.case-study-card__row dd {
+	margin: 0;
+	color: var(--ink-muted);
+	font-size: 0.92rem;
+}
+
+.case-study-card:nth-child(2) {
+	transition-delay: 0.08s;
+}
+
+.case-study-card:nth-child(3) {
+	transition-delay: 0.16s;
+}
+
+.case-studies-disclaimer {
+	text-align: center;
+	font-size: 0.8rem;
+	color: var(--ink-muted);
+	max-width: 520px;
+	margin: 32px auto 0;
 }
 
 /* -----------------------------------------------------------
@@ -884,6 +972,51 @@ button {
 	border-radius: 999px;
 	font-size: 0.85rem;
 	font-weight: 600;
+}
+
+/* Full-width band image directly under .page-hero on page-warehouse.php.
+   aspect-ratio reserves the box before the image loads (no layout shift);
+   it's the first-viewport image on that page so it loads eagerly, no
+   loading="lazy". */
+.warehouse-band {
+	width: 100%;
+	aspect-ratio: 16 / 7;
+	overflow: hidden;
+}
+
+.warehouse-band__img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Second warehouse photo, paired with the 見学CTA near the bottom of the
+   spec list. */
+.warehouse-tour {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 32px;
+	align-items: stretch;
+	margin-top: 48px;
+}
+
+.warehouse-tour__media {
+	border-radius: var(--radius);
+	overflow: hidden;
+	aspect-ratio: 4 / 3;
+}
+
+.warehouse-tour__img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.warehouse-tour__cta {
+	margin-top: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
 }
 
 /* -----------------------------------------------------------
@@ -1411,6 +1544,28 @@ button {
 
 	.service-detail {
 		grid-template-columns: 44px 1fr;
+	}
+
+	.service-detail--media {
+		grid-template-columns: 44px 1fr;
+	}
+
+	.service-detail__media {
+		grid-column: 1 / -1;
+		aspect-ratio: 16 / 9;
+		margin-top: 16px;
+	}
+
+	.warehouse-band {
+		aspect-ratio: 16 / 9;
+	}
+
+	.warehouse-tour {
+		grid-template-columns: 1fr;
+	}
+
+	.case-studies-grid {
+		grid-template-columns: 1fr;
 	}
 
 	.simulator {

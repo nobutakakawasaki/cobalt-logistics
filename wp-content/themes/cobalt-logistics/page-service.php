@@ -20,25 +20,55 @@ get_header();
 
 	<section class="section">
 		<div class="container">
-			<div class="service-detail">
+			<div class="service-detail service-detail--media">
 				<div class="service-detail__icon"><?php cobalt_logistics_icon( 'box' ); ?></div>
 				<div>
 					<h2 class="service-detail__title">EC物流代行</h2>
 					<p class="service-detail__text">受注データ連携から梱包・発送・返品対応まで、EC運営の"物流業務"を一括代行します。主要ASPカート・モールとのシステム連携に対応。</p>
 				</div>
+				<div class="service-detail__media">
+					<img
+						src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/packing-detail.jpg' ); ?>"
+						alt="梱包作業中の手元のクローズアップ"
+						width="600"
+						height="448"
+						loading="lazy"
+						class="service-detail__img"
+					>
+				</div>
 			</div>
-			<div class="service-detail">
+			<div class="service-detail service-detail--media">
 				<div class="service-detail__icon"><?php cobalt_logistics_icon( 'shelf' ); ?></div>
 				<div>
 					<h2 class="service-detail__title">倉庫保管・在庫管理</h2>
 					<p class="service-detail__text">WMS（倉庫管理システム）によるリアルタイム在庫可視化。ロケーション管理で誤出荷を防止。</p>
 				</div>
+				<div class="service-detail__media">
+					<img
+						src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/wms-scan.jpg' ); ?>"
+						alt="WMS端末で検品作業を行う作業員の後ろ姿"
+						width="600"
+						height="448"
+						loading="lazy"
+						class="service-detail__img"
+					>
+				</div>
 			</div>
-			<div class="service-detail">
+			<div class="service-detail service-detail--media">
 				<div class="service-detail__icon"><?php cobalt_logistics_icon( 'truck' ); ?></div>
 				<div>
 					<h2 class="service-detail__title">輸配送手配</h2>
 					<p class="service-detail__text">複数の運送会社と提携し、荷量・エリアに応じた最適な配送ルートを手配。急な出荷増にも対応。</p>
+				</div>
+				<div class="service-detail__media">
+					<img
+						src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/loading-dock.jpg' ); ?>"
+						alt="荷捌きバースで積み込み作業を行う作業員の後ろ姿"
+						width="600"
+						height="335"
+						loading="lazy"
+						class="service-detail__img"
+					>
 				</div>
 			</div>
 			<div class="service-detail">
