@@ -18,6 +18,7 @@ get_header();
 				alt=""
 				width="1920"
 				height="1071"
+				fetchpriority="high"
 			>
 			<img
 				class="hero-slideshow__slide"
@@ -25,6 +26,7 @@ get_header();
 				alt=""
 				width="1920"
 				height="1071"
+				fetchpriority="low"
 			>
 			<img
 				class="hero-slideshow__slide"
@@ -32,6 +34,7 @@ get_header();
 				alt=""
 				width="1920"
 				height="1071"
+				fetchpriority="low"
 			>
 			<div class="hero-slideshow__overlay"></div>
 		</div>
