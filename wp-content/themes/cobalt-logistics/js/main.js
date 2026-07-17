@@ -71,6 +71,126 @@
 	var isCoarsePointer = !! ( window.matchMedia && window.matchMedia( '(pointer: coarse)' ).matches );
 	var motionEnabled = ! prefersReducedMotion && ! isCoarsePointer;
 
+	// Hero photo slideshow (HOME only — the markup simply doesn't exist on
+	// other pages, so this whole block is a no-op there). Cycle per slide:
+	// pop-in (850ms, handled by the .is-active class swap below) -> hold
+	// with a slow Ken-Burns drift (.is-drift, 4.5s) -> fade out (.is-exit,
+	// 600ms) -> next slide's pop-in. Driven by a chained setTimeout rather
+	// than setInterval so a mid-phase pause (tab hidden) can resume with
+	// only the phase's *remaining* time rather than restarting the whole
+	// cycle or drifting out of sync with the CSS transition durations.
+	//
+	// Gated on prefers-reduced-motion only (like the route-line dot below,
+	// not the coarse-pointer check used for the cursor-follow effects),
+	// since this is a self-running background loop rather than a cursor
+	// interaction — touch users still see it play. Under reduced motion
+	// this whole block is skipped and the timer literally never starts
+	// (not just visually suppressed): the first slide's .is-active class
+	// is already set server-side in page-home.php, so it simply renders as
+	// a static photo, and the CSS reduced-motion backstop (style.css
+	// section 13) strips the transitions too as a belt-and-braces measure.
+	var heroSlides = document.querySelectorAll( '.hero-slideshow__slide' );
+
+	if ( heroSlides.length && ! prefersReducedMotion ) {
+		var HERO_SLIDE_POPIN_MS = 850;
+		var HERO_SLIDE_DRIFT_MS = 4500;
+		var HERO_SLIDE_EXIT_MS = 600;
+
+		var heroSlideState = {
+			index: 0,
+			phase: null,
+			phaseDuration: 0,
+			phaseStart: 0,
+			timeoutId: null,
+			remaining: null
+		};
+
+		// Starts (or restarts) the timer for the given phase. If the tab is
+		// hidden at the moment this is called, no timer is scheduled at all
+		// — `remaining` is set to the full duration instead, and the
+		// visibilitychange listener below picks it up once the tab becomes
+		// visible. This covers both a normal mid-cycle pause and the edge
+		// case of the page loading in an already-hidden background tab.
+		function heroSetSlidePhase( phase, duration ) {
+			heroSlideState.phase = phase;
+			heroSlideState.phaseDuration = duration;
+			heroSlideState.remaining = null;
+			clearTimeout( heroSlideState.timeoutId );
+			heroSlideState.timeoutId = null;
+
+			if ( document.visibilityState === 'hidden' ) {
+				heroSlideState.remaining = duration;
+				return;
+			}
+
+			heroSlideState.phaseStart = Date.now();
+			heroSlideState.timeoutId = setTimeout( heroAdvanceSlidePhase, duration );
+		}
+
+		function heroAdvanceSlidePhase() {
+			var slide = heroSlides[ heroSlideState.index ];
+
+			if ( heroSlideState.phase === 'popin' ) {
+				slide.classList.remove( 'is-active' );
+				slide.classList.add( 'is-drift' );
+				heroSetSlidePhase( 'drift', HERO_SLIDE_DRIFT_MS );
+			} else if ( heroSlideState.phase === 'drift' ) {
+				slide.classList.remove( 'is-drift' );
+				slide.classList.add( 'is-exit' );
+				heroSetSlidePhase( 'exit', HERO_SLIDE_EXIT_MS );
+			} else {
+				// 'exit' finished: reset this slide back to its idle base
+				// state (opacity 0 / scale 0.94, invisible already so the
+				// class removal itself is never seen), advance to the next
+				// slide in the loop, and kick off its pop-in.
+				slide.classList.remove( 'is-exit' );
+				heroSlideState.index = ( heroSlideState.index + 1 ) % heroSlides.length;
+				heroSlides[ heroSlideState.index ].classList.add( 'is-active' );
+				heroSetSlidePhase( 'popin', HERO_SLIDE_POPIN_MS );
+			}
+		}
+
+		// Pause/resume on tab visibility. Tracing through a hide mid-cycle:
+		// say the tab is hidden 2s into the 4.5s drift phase. `hidden`
+		// clears the pending timeout and records remaining = 2.5s; no timer
+		// is running at all while hidden, however long that lasts. When the
+		// tab becomes visible again, `remaining` (2.5s) is used as a fresh
+		// phase duration starting from that moment, so the drift phase's
+		// *visible* time always adds up to the full 4.5s rather than being
+		// cut short or double-counting the hidden time. (The CSS
+		// transition itself isn't paused — it runs on wall-clock time
+		// regardless of tab visibility — so if the tab is hidden for
+		// longer than the remaining transition time, the drift will have
+		// silently finished by the time it's shown again; the slide just
+		// sits at its fully-drifted size a little longer before the timer
+		// above catches up and fades it out. No visible jump either way.)
+		document.addEventListener( 'visibilitychange', function () {
+			if ( document.visibilityState === 'hidden' ) {
+				if ( heroSlideState.timeoutId !== null ) {
+					clearTimeout( heroSlideState.timeoutId );
+					heroSlideState.timeoutId = null;
+					var elapsed = Date.now() - heroSlideState.phaseStart;
+					heroSlideState.remaining = Math.max( heroSlideState.phaseDuration - elapsed, 0 );
+				}
+			} else if ( heroSlideState.timeoutId === null && heroSlideState.remaining !== null ) {
+				var resumeDuration = heroSlideState.remaining;
+				heroSlideState.remaining = null;
+				heroSlideState.phaseDuration = resumeDuration;
+				heroSlideState.phaseStart = Date.now();
+				heroSlideState.timeoutId = setTimeout( heroAdvanceSlidePhase, resumeDuration );
+			}
+		} );
+
+		// Slide 0 is already rendered .is-active (opacity 1 / scale 1) by
+		// page-home.php, so its pop-in has effectively already happened —
+		// jump straight into the drift phase for it instead of re-running
+		// the pop-in transition (which would require resetting it to
+		// opacity 0 first and would flash the hero empty for a moment).
+		heroSlides[ 0 ].classList.remove( 'is-active' );
+		heroSlides[ 0 ].classList.add( 'is-drift' );
+		heroSetSlidePhase( 'drift', HERO_SLIDE_DRIFT_MS );
+	}
+
 	// Cursor-following gradient blobs in the HOME hero. Mouse position is
 	// captured on mousemove (throttled to one update per animation frame),
 	// but the blobs themselves ease toward that target continuously via a

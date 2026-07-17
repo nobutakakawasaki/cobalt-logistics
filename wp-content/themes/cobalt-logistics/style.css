@@ -4,7 +4,7 @@ Theme URI: https://example.com/cobalt-logistics
 Author: 5kimac
 Author URI: https://example.com
 Description: コバルト物流株式会社 コーポレートサイト用クラシックPHPテーマ（架空クライアント想定のポートフォリオデモ制作）。
-Version: 1.2.0
+Version: 1.3.0
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: cobalt-logistics
@@ -358,6 +358,77 @@ button {
 	background: rgba(255, 255, 255, 0.06);
 }
 
+/* Hero photo slideshow ("hero-parapop"-style pop-in -> hold/drift -> fade
+   cycle, driven by js/main.js). Purely decorative background layer, so the
+   container is aria-hidden and every <img> has alt="". Sits UNDER the
+   existing .hero-blob / .hero-route layers below (same z-index: 0, but
+   earlier in DOM order, so it paints first/underneath — see those two
+   blocks for the rest of the stack). The first slide is marked .is-active
+   directly in the markup so it renders as a static photo with no JS/CSS
+   animation at all if JS never runs (matches the .hero-route dot's
+   no-JS/reduced-motion fallback pattern above/below it). */
+.hero-slideshow {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	overflow: hidden;
+}
+
+.hero-slideshow__slide {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	opacity: 0;
+	transform: scale(0.94);
+	transition: opacity 850ms ease-out, transform 850ms ease-out;
+}
+
+/* Pop-in target: opacity 0 -> 1 and scale 0.94 -> 1 over the 850ms set
+   above. js/main.js swaps this class out for .is-drift once that
+   transition finishes. */
+.hero-slideshow__slide.is-active {
+	opacity: 1;
+	transform: scale(1);
+}
+
+/* Hold + Ken Burns-style drift: only the transform duration is overridden
+   (much longer, ~4.5s) so the image keeps creeping from scale(1) to
+   scale(1.04) for the whole hold. Opacity is left at 1 with no meaningful
+   transition since it isn't changing during this phase. */
+.hero-slideshow__slide.is-drift {
+	opacity: 1;
+	transform: scale(1.04);
+	transition: transform 4500ms linear;
+}
+
+/* Exit: fades out over 600ms. Deliberately keeps transform at the drifted
+   scale(1.04) instead of snapping back to scale(1)/(0.94), so the image
+   doesn't visibly "jump" size while it's fading. */
+.hero-slideshow__slide.is-exit {
+	opacity: 0;
+	transform: scale(1.04);
+	transition: opacity 600ms ease-in;
+}
+
+/* Cobalt gradient overlay, same 135deg direction as the flat .hero
+   background it's replacing visually. Alpha kept uniformly high (.96) on
+   purpose: this makes the composite very close to the original opaque
+   flat gradient, with only a thin sliver of the photo bleeding through.
+   QA measured the original .92 weak-end stop against a real sampled
+   bright pixel from hero-slide-2.jpg and found .hero__lead/.stat-label
+   dropped below WCAG AA (4.17:1 / 3.57:1, need 4.5:1) — raised to .96
+   throughout, and .hero__lead/.stat-label were also made more opaque
+   (see below), which together clear 4.5:1 with margin against the same
+   worst-case sample. */
+.hero-slideshow__overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	background: linear-gradient(135deg, rgba(12, 58, 140, 0.96) 0%, rgba(30, 95, 204, 0.96) 100%);
+}
+
 .hero__inner {
 	position: relative;
 	z-index: 1;
@@ -377,7 +448,10 @@ button {
 
 .hero__lead {
 	font-size: clamp(1rem, 2.2vw, 1.2rem);
-	opacity: 0.92;
+	/* Was opacity: 0.92 — QA found that dropped contrast against the photo
+	   slideshow's brightest patches below WCAG AA for normal-size text
+	   (4.17:1, needs 4.5:1). Fully opaque instead; the hero background is
+	   busy enough now that the text doesn't need to recede further. */
 	margin-bottom: 36px;
 }
 
@@ -461,7 +535,13 @@ button {
 }
 
 .hero-manifest .stat-label {
-	color: rgba(255, 255, 255, 0.75);
+	/* Was rgba(255,255,255,.75) — QA measured 3.57:1 against the photo
+	   slideshow's brightest patches, below the 4.5:1 WCAG AA threshold for
+	   normal-size text. .9 alpha (combined with the overlay strengthening
+	   above) computes to ~4.74:1 against the same worst-case sample, while
+	   still reading slightly de-emphasized versus the fully-opaque
+	   .stat-number. */
+	color: rgba(255, 255, 255, 0.9);
 }
 
 .hero-manifest .stat-number {
@@ -1768,6 +1848,14 @@ button {
 ----------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
 	.hero-blob {
+		transition: none;
+	}
+
+	/* js/main.js never starts the slideshow timer under reduced motion, so
+	   only the first slide's .is-active class (set server-side in
+	   page-home.php) is ever applied — this just stops its pop-in
+	   transition from playing on initial paint, leaving it a static photo. */
+	.hero-slideshow__slide {
 		transition: none;
 	}
 

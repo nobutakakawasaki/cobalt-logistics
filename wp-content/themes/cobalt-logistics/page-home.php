@@ -11,6 +11,30 @@ get_header();
 <main>
 
 	<section class="hero">
+		<div class="hero-slideshow" aria-hidden="true">
+			<img
+				class="hero-slideshow__slide is-active"
+				src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/hero-slide-1.jpg' ); ?>"
+				alt=""
+				width="1920"
+				height="1071"
+			>
+			<img
+				class="hero-slideshow__slide"
+				src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/hero-slide-2.jpg' ); ?>"
+				alt=""
+				width="1920"
+				height="1071"
+			>
+			<img
+				class="hero-slideshow__slide"
+				src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/hero-slide-3.jpg' ); ?>"
+				alt=""
+				width="1920"
+				height="1071"
+			>
+			<div class="hero-slideshow__overlay"></div>
+		</div>
 		<div class="hero-blob hero-blob--1" aria-hidden="true"></div>
 		<div class="hero-blob hero-blob--2" aria-hidden="true"></div>
 		<svg class="hero-route" viewBox="0 0 1000 460" preserveAspectRatio="none" aria-hidden="true" focusable="false">
