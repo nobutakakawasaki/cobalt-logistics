@@ -4,7 +4,7 @@ Theme URI: https://example.com/cobalt-logistics
 Author: 5kimac
 Author URI: https://example.com
 Description: コバルト物流株式会社 コーポレートサイト用クラシックPHPテーマ（架空クライアント想定のポートフォリオデモ制作）。
-Version: 1.3.0
+Version: 1.3.1
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: cobalt-logistics
@@ -413,20 +413,19 @@ button {
 }
 
 /* Cobalt gradient overlay, same 135deg direction as the flat .hero
-   background it's replacing visually. Alpha kept uniformly high (.96) on
-   purpose: this makes the composite very close to the original opaque
-   flat gradient, with only a thin sliver of the photo bleeding through.
-   QA measured the original .92 weak-end stop against a real sampled
-   bright pixel from hero-slide-2.jpg and found .hero__lead/.stat-label
-   dropped below WCAG AA (4.17:1 / 3.57:1, need 4.5:1) — raised to .96
-   throughout, and .hero__lead/.stat-label were also made more opaque
-   (see below), which together clear 4.5:1 with margin against the same
-   worst-case sample. */
+   background it's replacing visually. Pushing this alpha high enough to
+   guarantee text contrast on its own (previous pass: .96 uniform) made the
+   photos nearly invisible, defeating the point of adding them — so this is
+   deliberately lighter again, and text legibility is instead guaranteed by
+   a text-shadow "halo" on the text itself (see .hero__title/.hero__lead/
+   .hero-manifest below), which protects against any photo content
+   regardless of how bright a given frame gets, rather than trying to
+   pre-compute a worst case via background alpha alone. */
 .hero-slideshow__overlay {
 	position: absolute;
 	inset: 0;
 	z-index: 1;
-	background: linear-gradient(135deg, rgba(12, 58, 140, 0.96) 0%, rgba(30, 95, 204, 0.96) 100%);
+	background: linear-gradient(135deg, rgba(12, 58, 140, 0.78) 0%, rgba(30, 95, 204, 0.68) 100%);
 }
 
 .hero__inner {
@@ -444,15 +443,13 @@ button {
 .hero__title {
 	font-size: clamp(2.1rem, 5.5vw, 3.4rem);
 	margin-bottom: 20px;
+	text-shadow: 0 1px 3px rgba(6, 26, 64, 0.55), 0 4px 18px rgba(6, 26, 64, 0.35);
 }
 
 .hero__lead {
 	font-size: clamp(1rem, 2.2vw, 1.2rem);
-	/* Was opacity: 0.92 — QA found that dropped contrast against the photo
-	   slideshow's brightest patches below WCAG AA for normal-size text
-	   (4.17:1, needs 4.5:1). Fully opaque instead; the hero background is
-	   busy enough now that the text doesn't need to recede further. */
 	margin-bottom: 36px;
+	text-shadow: 0 1px 3px rgba(6, 26, 64, 0.55), 0 4px 18px rgba(6, 26, 64, 0.35);
 }
 
 .hero__buttons {
@@ -535,18 +532,19 @@ button {
 }
 
 .hero-manifest .stat-label {
-	/* Was rgba(255,255,255,.75) — QA measured 3.57:1 against the photo
-	   slideshow's brightest patches, below the 4.5:1 WCAG AA threshold for
-	   normal-size text. .9 alpha (combined with the overlay strengthening
-	   above) computes to ~4.74:1 against the same worst-case sample, while
-	   still reading slightly de-emphasized versus the fully-opaque
-	   .stat-number. */
+	/* Was rgba(255,255,255,.75) — low contrast against the photo
+	   slideshow's brighter frames. Alpha raised to .9, and (like the rest
+	   of the hero text) a text-shadow halo below now does the heavy
+	   lifting for legibility regardless of what's behind it, so this
+	   doesn't need to be fully opaque to stay readable. */
 	color: rgba(255, 255, 255, 0.9);
+	text-shadow: 0 1px 2px rgba(6, 26, 64, 0.5);
 }
 
 .hero-manifest .stat-number {
 	color: var(--paper);
 	font-size: 1.5rem;
+	text-shadow: 0 1px 3px rgba(6, 26, 64, 0.55), 0 4px 18px rgba(6, 26, 64, 0.35);
 }
 
 .page-hero {
