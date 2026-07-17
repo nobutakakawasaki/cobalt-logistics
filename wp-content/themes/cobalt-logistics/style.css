@@ -323,6 +323,29 @@ button {
 	gap: 16px;
 }
 
+/* Cursor-following gradient blobs (see js/main.js). Positioned/eased via JS;
+   sit centered and static if JS never attaches (reduced motion / touch). */
+.hero-blob {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 420px;
+	height: 420px;
+	border-radius: 50%;
+	background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 70%);
+	filter: blur(10px);
+	pointer-events: none;
+	z-index: 0;
+	transform: translate3d(-50%, -50%, 0);
+	will-change: transform;
+}
+
+.hero-blob--2 {
+	width: 280px;
+	height: 280px;
+	background: radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 70%);
+}
+
 .page-hero {
 	background: linear-gradient(135deg, var(--cobalt) 0%, var(--cobalt-dark) 100%);
 	color: var(--white);
@@ -399,10 +422,12 @@ button {
 	padding: 28px 22px;
 	box-shadow: var(--shadow);
 	transition: transform 0.15s ease;
+	transform: translateY(var(--card-lift, 0)) perspective(700px)
+		rotateX(var(--card-tilt-x, 0deg)) rotateY(var(--card-tilt-y, 0deg));
 }
 
 .service-card:hover {
-	transform: translateY(-4px);
+	--card-lift: -4px;
 }
 
 .service-card__icon {
@@ -434,6 +459,13 @@ button {
 	gap: 20px;
 	padding: 28px 0;
 	border-bottom: 1px solid var(--border);
+	transition: transform 0.15s ease;
+	transform: translateY(var(--card-lift, 0)) perspective(700px)
+		rotateX(var(--card-tilt-x, 0deg)) rotateY(var(--card-tilt-y, 0deg));
+}
+
+.service-detail:hover {
+	--card-lift: -2px;
 }
 
 .service-detail:last-of-type {
@@ -512,23 +544,27 @@ button {
 	background: var(--cobalt-pale);
 }
 
-.map-placeholder {
+.map-embed {
 	margin-top: 32px;
-	height: 260px;
+	position: relative;
+	aspect-ratio: 16 / 9;
 	border-radius: var(--radius);
-	background: repeating-linear-gradient(
-			45deg,
-			var(--cobalt-light),
-			var(--cobalt-light) 10px,
-			var(--white) 10px,
-			var(--white) 20px
-		);
-	border: 1px dashed var(--cobalt);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: var(--cobalt);
-	font-weight: 600;
+	overflow: hidden;
+	border: 1px solid var(--border);
+}
+
+.map-embed iframe {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
+.map-embed__caption {
+	margin-top: 10px;
+	font-size: 0.82rem;
+	color: var(--text-muted);
 	text-align: center;
 }
 
@@ -714,6 +750,81 @@ button {
 	font-size: 0.82rem;
 	color: var(--text-muted);
 	text-align: center;
+	margin-top: 8px;
+}
+
+/* -----------------------------------------------------------
+   7b. Contact form (HOME)
+----------------------------------------------------------- */
+.contact-form {
+	max-width: 560px;
+	margin: 0 auto;
+	background: var(--white);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 32px;
+	box-shadow: var(--shadow);
+	text-align: left;
+}
+
+.contact-form__field {
+	margin-bottom: 20px;
+}
+
+.contact-form__field label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 6px;
+	font-size: 0.9rem;
+}
+
+.contact-form__field .required {
+	color: var(--cobalt);
+	font-size: 0.75rem;
+	font-weight: 700;
+	margin-left: 4px;
+}
+
+.contact-form__field input,
+.contact-form__field select,
+.contact-form__field textarea {
+	width: 100%;
+	padding: 12px 14px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	font-size: 0.95rem;
+	font-family: inherit;
+}
+
+.contact-form__error {
+	background: #fdecec;
+	color: #b3261e;
+	border-radius: 6px;
+	padding: 12px 14px;
+	font-size: 0.88rem;
+	margin: 0 0 16px;
+}
+
+.form-message {
+	max-width: 560px;
+	margin: 0 auto 24px;
+	padding: 14px 18px;
+	border-radius: var(--radius);
+	font-weight: 600;
+	text-align: center;
+}
+
+.form-message--success {
+	background: var(--cobalt-light);
+	color: var(--cobalt-dark);
+}
+
+.form-message--error {
+	background: #fdecec;
+	color: #b3261e;
+}
+
+.contact-alt {
 	margin-top: 8px;
 }
 
@@ -1007,5 +1118,23 @@ button {
 @media (max-width: 480px) {
 	.stats-grid {
 		grid-template-columns: 1fr;
+	}
+}
+
+/* -----------------------------------------------------------
+   12. Reduced motion
+   js/main.js already skips attaching the mousemove listeners in this
+   case; this is a CSS-level backstop so the hover/tilt transitions
+   themselves don't animate even if triggered some other way.
+----------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+	.hero-blob {
+		transition: none;
+	}
+
+	.service-card,
+	.service-detail,
+	.btn {
+		transition: none;
 	}
 }

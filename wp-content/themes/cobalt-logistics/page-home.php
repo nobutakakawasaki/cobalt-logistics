@@ -11,6 +11,8 @@ get_header();
 <main>
 
 	<section class="hero">
+		<div class="hero-blob hero-blob--1" aria-hidden="true"></div>
+		<div class="hero-blob hero-blob--2" aria-hidden="true"></div>
 		<div class="hero__inner">
 			<h1 class="hero__title">物流の"面倒"を、まるごと引き受ける。</h1>
 			<p class="hero__lead">入庫から出荷まで。EC事業者の物流を、コバルト物流がワンストップで支えます。</p>
@@ -89,12 +91,81 @@ get_header();
 		</div>
 	</section>
 
+	<?php
+	$cobalt_inquiry_status  = isset( $_GET['inquiry'] ) ? sanitize_key( wp_unslash( $_GET['inquiry'] ) ) : '';
+	$cobalt_inquiry_missing = isset( $_GET['inquiry_missing'] ) ? sanitize_text_field( wp_unslash( $_GET['inquiry_missing'] ) ) : '';
+
+	$cobalt_missing_labels = array(
+		'name'    => 'お名前',
+		'email'   => 'メールアドレス',
+		'message' => 'お問い合わせ内容',
+	);
+	$cobalt_missing_fields = array();
+	if ( $cobalt_inquiry_missing ) {
+		foreach ( explode( ',', $cobalt_inquiry_missing ) as $cobalt_missing_key ) {
+			if ( isset( $cobalt_missing_labels[ $cobalt_missing_key ] ) ) {
+				$cobalt_missing_fields[] = $cobalt_missing_labels[ $cobalt_missing_key ];
+			}
+		}
+	}
+	?>
+
 	<section class="section section--alt" id="contact">
-		<div class="container" style="text-align:center;">
+		<div class="container">
 			<h2 class="section-title">お問い合わせ</h2>
-			<p class="section-lead">資料請求・倉庫見学のお問い合わせは、お電話またはメールにて承っております。</p>
-			<p class="footer-contact__phone" style="color: var(--cobalt);">045-000-0000</p>
-			<p>contact@example.com（デモ用ダミー）</p>
+			<p class="section-lead">資料請求・倉庫見学など、お気軽にお問い合わせください。</p>
+
+			<?php if ( 'success' === $cobalt_inquiry_status ) : ?>
+				<p class="form-message form-message--success" role="status">お問い合わせありがとうございます。担当者より折り返しご連絡いたします。</p>
+			<?php elseif ( 'error' === $cobalt_inquiry_status ) : ?>
+				<p class="form-message form-message--error" role="alert">
+					<?php if ( $cobalt_missing_fields ) : ?>
+						以下の項目をご確認ください：<?php echo esc_html( implode( '、', $cobalt_missing_fields ) ); ?>
+					<?php else : ?>
+						送信に失敗しました。お手数ですが、入力内容をご確認のうえ再度お試しください。
+					<?php endif; ?>
+				</p>
+			<?php endif; ?>
+
+			<form class="contact-form" id="contact-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" novalidate>
+				<input type="hidden" name="action" value="cobalt_submit_inquiry">
+				<?php wp_nonce_field( 'cobalt_submit_inquiry', 'cobalt_inquiry_nonce' ); ?>
+
+				<div class="contact-form__field">
+					<label for="inquiry-name">お名前 <span class="required">必須</span></label>
+					<input type="text" id="inquiry-name" name="inquiry_name" autocomplete="name" required>
+				</div>
+				<div class="contact-form__field">
+					<label for="inquiry-company">会社名</label>
+					<input type="text" id="inquiry-company" name="inquiry_company" autocomplete="organization">
+				</div>
+				<div class="contact-form__field">
+					<label for="inquiry-email">メールアドレス <span class="required">必須</span></label>
+					<input type="email" id="inquiry-email" name="inquiry_email" autocomplete="email" required>
+				</div>
+				<div class="contact-form__field">
+					<label for="inquiry-type">お問い合わせ種別</label>
+					<select id="inquiry-type" name="inquiry_type">
+						<option value="資料請求">資料請求</option>
+						<option value="倉庫見学">倉庫見学</option>
+						<option value="その他">その他</option>
+					</select>
+				</div>
+				<div class="contact-form__field">
+					<label for="inquiry-message">お問い合わせ内容 <span class="required">必須</span></label>
+					<textarea id="inquiry-message" name="inquiry_message" rows="5" required></textarea>
+				</div>
+
+				<p class="contact-form__error" id="contact-form-error" role="alert" hidden></p>
+
+				<button type="submit" class="btn btn--solid" style="width:100%;">送信する</button>
+			</form>
+
+			<div class="contact-alt">
+				<p class="section-lead" style="margin-top:32px;">フォームをご利用にならない場合は、お電話・メールでも承っております。</p>
+				<p class="footer-contact__phone" style="color: var(--cobalt); text-align:center;">045-000-0000</p>
+				<p style="text-align:center;">contact@example.com（デモ用ダミー）</p>
+			</div>
 		</div>
 	</section>
 

@@ -52,7 +52,21 @@ get_header();
 				</tbody>
 			</table>
 
-			<div class="map-placeholder">地図（デモ用ダミー枠）</div>
+			<?php
+			// District-level query only (no street number / building name) so the
+			// embed doesn't pin an unrelated real building for this fictional client.
+			$cobalt_map_query = rawurlencode( '横浜市鶴見区大黒町' );
+			$cobalt_map_src   = 'https://www.google.com/maps?q=' . $cobalt_map_query . '&output=embed';
+			?>
+			<div class="map-embed">
+				<iframe
+					src="<?php echo esc_url( $cobalt_map_src ); ?>"
+					loading="lazy"
+					referrerpolicy="no-referrer-when-downgrade"
+					title="コバルト物流株式会社 所在地周辺（横浜市鶴見区大黒町エリア）の地図"
+				></iframe>
+			</div>
+			<p class="map-embed__caption">所在地イメージ（デモ用のため実際の建物とは異なります）</p>
 		</div>
 	</section>
 
