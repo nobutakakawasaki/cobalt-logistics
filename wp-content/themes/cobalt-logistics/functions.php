@@ -88,6 +88,34 @@ function cobalt_logistics_meta_tags() {
 add_action( 'wp_head', 'cobalt_logistics_meta_tags', 1 );
 
 /**
+ * Organization structured data (schema.org JSON-LD), site-wide. Values match
+ * the company info established in DESIGN_BRIEF.md — all fictional/demo data.
+ */
+function cobalt_logistics_structured_data() {
+	$data = array(
+		'@context'  => 'https://schema.org',
+		'@type'     => 'LocalBusiness', // No schema.org type fits "3PL/EC物流代行" precisely; LocalBusiness is the closest accurate generic fit (physical address, serves clients) without implying an unrelated service like household moving.
+		'name'      => get_bloginfo( 'name' ),
+		'url'       => home_url( '/' ),
+		'logo'      => get_template_directory_uri() . '/assets/favicon.svg',
+		'image'     => get_template_directory_uri() . '/assets/images/facility-exterior.jpg',
+		'telephone' => '045-000-0000',
+		'email'     => 'contact@example.com',
+		'address'   => array(
+			'@type'           => 'PostalAddress',
+			'streetAddress'   => '大黒町2-3 コバルト物流ベイサイド棟',
+			'addressLocality' => '横浜市鶴見区',
+			'addressRegion'   => '神奈川県',
+			'addressCountry'  => 'JP',
+		),
+		'sameAs'    => array(),
+	);
+
+	echo '<script type="application/ld+json">' . wp_json_encode( $data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+}
+add_action( 'wp_head', 'cobalt_logistics_structured_data', 2 );
+
+/**
  * Fallback menu output when no primary menu is assigned yet.
  */
 function cobalt_logistics_fallback_menu() {
