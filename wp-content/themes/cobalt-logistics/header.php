@@ -14,6 +14,7 @@
 </head>
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
+<script>document.documentElement.classList.add( 'js-reveal-ready' );</script>
 
 <header class="site-header">
 	<div class="site-header__inner">

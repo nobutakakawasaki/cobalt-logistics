@@ -27,19 +27,19 @@ get_header();
 				</div>
 			</div>
 			<ul class="hero-manifest" aria-label="導入実績">
-				<li class="hero-manifest__item reveal">
+				<li class="hero-manifest__item reveal-onload">
 					<span class="stat-label">導入企業数</span>
 					<span class="stat-number">180社+</span>
 				</li>
-				<li class="hero-manifest__item reveal">
+				<li class="hero-manifest__item reveal-onload">
 					<span class="stat-label">出荷精度</span>
 					<span class="stat-number">99.98%</span>
 				</li>
-				<li class="hero-manifest__item reveal">
+				<li class="hero-manifest__item reveal-onload">
 					<span class="stat-label">対応倉庫面積</span>
 					<span class="stat-number">12,000坪</span>
 				</li>
-				<li class="hero-manifest__item reveal">
+				<li class="hero-manifest__item reveal-onload">
 					<span class="stat-label">稼働年数</span>
 					<span class="stat-number">13年</span>
 				</li>

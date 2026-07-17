@@ -4,7 +4,7 @@ Theme URI: https://example.com/cobalt-logistics
 Author: 5kimac
 Author URI: https://example.com
 Description: コバルト物流株式会社 コーポレートサイト用クラシックPHPテーマ（架空クライアント想定のポートフォリオデモ制作）。
-Version: 1.1.0
+Version: 1.2.0
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: cobalt-logistics
@@ -1269,16 +1269,26 @@ button {
 }
 
 /* -----------------------------------------------------------
-   11. Scroll reveal
-   Fade + slide-in for the hero manifest stats and 沿革 timeline items,
-   triggered via IntersectionObserver in js/main.js (`.is-visible` added
-   on first intersection). Reduced-motion is handled below.
+   11. Reveal animations
+   Two variants, because "fade in on scroll" only makes sense for content
+   that starts outside the viewport:
 
-   Progressive enhancement: `.reveal` renders fully visible by default.
-   It's only hidden pre-reveal when the `js-reveal-ready` class is present
-   on <html> — the very first thing js/main.js does, before any other
-   logic runs — so content never disappears if JS fails to load, throws,
-   or is disabled; it just skips the fade-in animation and shows normally.
+   - `.reveal` (沿革 timeline on page-company.php): genuinely below the
+     fold, so it fades/slides in via IntersectionObserver in js/main.js
+     (`.is-visible` added on first intersection) as the user scrolls to it.
+   - `.reveal-onload` (hero manifest stats on page-home.php): part of the
+     initial hero, visible without scrolling — an IntersectionObserver
+     would fire it almost instantly on page load and be imperceptible, so
+     this variant plays a plain staggered CSS animation on page load
+     instead, no JS observer involved.
+
+   Both share the same progressive-enhancement pattern: fully visible by
+   default, and only put into their pre-animation hidden state once the
+   `js-reveal-ready` class is present on <html> (added by an inline
+   <script> at the top of <body> in header.php, before first paint — see
+   that file and js/main.js for why it's not done in main.js itself).
+   That way content never disappears if JS fails to load, throws, or is
+   disabled; it just skips the animation and shows normally.
 ----------------------------------------------------------- */
 .reveal {
 	opacity: 1;
@@ -1296,16 +1306,38 @@ button {
 	transform: none;
 }
 
-.hero-manifest__item:nth-child(2) {
-	transition-delay: 0.08s;
+.reveal-onload {
+	opacity: 1;
+	transform: none;
 }
 
-.hero-manifest__item:nth-child(3) {
-	transition-delay: 0.16s;
+.js-reveal-ready .reveal-onload {
+	opacity: 0;
+	transform: translateY(14px);
+	animation: cobalt-reveal-in 0.6s ease forwards;
 }
 
-.hero-manifest__item:nth-child(4) {
-	transition-delay: 0.24s;
+@keyframes cobalt-reveal-in {
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.hero-manifest__item.reveal-onload:nth-child(1) {
+	animation-delay: 0.05s;
+}
+
+.hero-manifest__item.reveal-onload:nth-child(2) {
+	animation-delay: 0.15s;
+}
+
+.hero-manifest__item.reveal-onload:nth-child(3) {
+	animation-delay: 0.25s;
+}
+
+.hero-manifest__item.reveal-onload:nth-child(4) {
+	animation-delay: 0.35s;
 }
 
 .timeline__item:nth-child(2) {
@@ -1446,9 +1478,12 @@ button {
 	}
 
 	.reveal,
-	.js-reveal-ready .reveal {
+	.js-reveal-ready .reveal,
+	.reveal-onload,
+	.js-reveal-ready .reveal-onload {
 		opacity: 1;
 		transform: none;
 		transition: none;
+		animation: none;
 	}
 }

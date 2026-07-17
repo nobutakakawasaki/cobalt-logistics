@@ -5,14 +5,13 @@
 ( function () {
 	'use strict';
 
-	// Progressive-enhancement marker for the .reveal scroll-reveal effect
-	// (see style.css section 11): .reveal renders fully visible by default,
-	// and is only pre-hidden for the fade-in animation once this class is
-	// present. This is the very first statement in the script, before
-	// anything that could throw, so a JS error further down (or JS being
-	// blocked/disabled entirely) never leaves the hero stats / timeline
-	// content stuck invisible.
-	document.documentElement.classList.add( 'js-reveal-ready' );
+	// Note: the `js-reveal-ready` class used by .reveal / .reveal-onload
+	// (see style.css section 11) is added by a tiny inline <script> right
+	// after <body> in header.php, not here — this file loads in the footer,
+	// which would be late enough to cause a visible flash (content painted
+	// visible, then hidden, then animated back in) for the above-the-fold
+	// hero stats. The inline version runs before the page paints and even
+	// survives this file failing to load at all.
 
 	// Mobile hamburger navigation toggle.
 	var navToggle = document.querySelector( '.nav-toggle' );
