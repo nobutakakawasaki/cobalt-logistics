@@ -72,34 +72,11 @@ get_header();
 
 	<section class="section">
 		<div class="container">
-			<h2 class="section-title">ご応募方法</h2>
-			<p class="section-lead">下記お問い合わせフォームより「採用について」を選択の上ご連絡ください。</p>
-
-			<form class="apply-form" onsubmit="return false;">
-				<div class="apply-form__field">
-					<label for="applicant-name">お名前</label>
-					<input type="text" id="applicant-name" name="applicant-name" placeholder="山田 太郎">
-				</div>
-				<div class="apply-form__field">
-					<label for="applicant-email">メールアドレス</label>
-					<input type="email" id="applicant-email" name="applicant-email" placeholder="example@example.com">
-				</div>
-				<div class="apply-form__field">
-					<label for="applicant-subject">お問い合わせ内容</label>
-					<select id="applicant-subject" name="applicant-subject">
-						<option>採用について</option>
-						<option>資料請求について</option>
-						<option>倉庫見学について</option>
-						<option>その他</option>
-					</select>
-				</div>
-				<div class="apply-form__field">
-					<label for="applicant-message">メッセージ</label>
-					<textarea id="applicant-message" name="applicant-message" rows="4" placeholder="ご希望の職種などをご記入ください"></textarea>
-				</div>
-				<button type="submit" class="btn btn--solid" style="width:100%;">送信する</button>
-				<p class="apply-form__note">※ 本サイトはポートフォリオ用デモのため、実際の送信機能はありません。</p>
-			</form>
+			<div class="cta-banner">
+				<h2 class="cta-banner__title">ご応募方法</h2>
+				<p style="margin-bottom: 20px;">下記のお問い合わせフォームより、「お問い合わせ種別」で「採用について」をお選びのうえご連絡ください。ご希望の職種やご経歴を添えていただけるとスムーズです。</p>
+				<a class="btn btn--primary" href="<?php echo esc_url( home_url( '/#contact' ) ); ?>">お問い合わせフォームへ</a>
+			</div>
 		</div>
 	</section>
 

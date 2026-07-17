@@ -225,6 +225,7 @@ get_header();
 					<select id="inquiry-type" name="inquiry_type">
 						<option value="資料請求">資料請求</option>
 						<option value="倉庫見学">倉庫見学</option>
+						<option value="採用について">採用について</option>
 						<option value="その他">その他</option>
 					</select>
 				</div>
