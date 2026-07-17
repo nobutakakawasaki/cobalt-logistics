@@ -10,11 +10,13 @@
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/svg+xml" href="<?php echo esc_url( get_template_directory_uri() . '/assets/favicon.svg' ); ?>">
 	<?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 <script>document.documentElement.classList.add( 'js-reveal-ready' );</script>
+<a class="skip-link" href="#main">本文へスキップ</a>
 
 <header class="site-header">
 	<div class="site-header__inner">

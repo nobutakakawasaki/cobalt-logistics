@@ -8,7 +8,7 @@
 get_header();
 ?>
 
-<main>
+<main id="main">
 
 	<section class="hero">
 		<div class="hero-slideshow" aria-hidden="true">

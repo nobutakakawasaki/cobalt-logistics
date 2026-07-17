@@ -31,7 +31,7 @@ $cobalt_faqs = array(
 );
 ?>
 
-<main>
+<main id="main">
 
 	<section class="page-hero">
 		<div class="container">

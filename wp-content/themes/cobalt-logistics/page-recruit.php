@@ -8,7 +8,7 @@
 get_header();
 ?>
 
-<main>
+<main id="main">
 
 	<section class="page-hero">
 		<div class="container">

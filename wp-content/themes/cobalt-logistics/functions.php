@@ -47,6 +47,47 @@ function cobalt_logistics_scripts() {
 add_action( 'wp_enqueue_scripts', 'cobalt_logistics_scripts' );
 
 /**
+ * Per-page meta description + Open Graph/Twitter Card tags. Descriptions are
+ * hand-written per page slug rather than auto-excerpted, since these are
+ * static corporate pages with no post content to summarize from.
+ */
+function cobalt_logistics_meta_tags() {
+	if ( ! is_page() ) {
+		return;
+	}
+
+	$descriptions = array(
+		'home'      => 'EC物流代行・倉庫保管・輸配送手配・流通加工を一括サポート。導入企業180社以上のコバルト物流株式会社が、物流の"面倒"をまるごと引き受けます。',
+		'service'   => 'EC物流代行、倉庫保管・在庫管理、輸配送手配、流通加工まで。コバルト物流のサービス内容と概算料金シミュレーターをご紹介します。',
+		'recruit'   => 'コバルト物流の採用情報。倉庫内オペレーション、物流管理職、配送コーディネーターなど、未経験からでも活躍できる仲間を募集しています。',
+		'company'   => 'コバルト物流株式会社の会社概要。設立・資本金・代表者・事業内容・沿革など、企業情報をまとめてご紹介します。',
+		'warehouse' => '神奈川県横浜市の自社倉庫をご紹介。延床面積12,000坪、WMS完備、温湿度管理エリアなど倉庫設備の詳細と見学のお申し込みはこちら。',
+		'faq'       => 'コバルト物流のサービスに関するよくあるご質問。小ロット対応、契約期間、配送エリア、システム連携などについてお答えします。',
+		'privacy'   => 'コバルト物流株式会社のプライバシーポリシー。個人情報の利用目的、第三者提供の制限、管理体制について定めています。',
+	);
+
+	global $post;
+	$slug        = $post ? $post->post_name : '';
+	$description = isset( $descriptions[ $slug ] ) ? $descriptions[ $slug ] : $descriptions['home'];
+	$title       = is_front_page() ? get_bloginfo( 'name' ) . ' – EC物流代行・倉庫保管・輸配送手配・流通加工' : get_the_title() . ' – ' . get_bloginfo( 'name' );
+	$image       = get_template_directory_uri() . '/assets/images/facility-exterior.jpg';
+
+	echo '<meta name="description" content="' . esc_attr( $description ) . '">' . "\n";
+	echo '<meta property="og:type" content="website">' . "\n";
+	echo '<meta property="og:locale" content="ja_JP">' . "\n";
+	echo '<meta property="og:site_name" content="' . esc_attr( get_bloginfo( 'name' ) ) . '">' . "\n";
+	echo '<meta property="og:title" content="' . esc_attr( $title ) . '">' . "\n";
+	echo '<meta property="og:description" content="' . esc_attr( $description ) . '">' . "\n";
+	echo '<meta property="og:url" content="' . esc_url( get_permalink() ) . '">' . "\n";
+	echo '<meta property="og:image" content="' . esc_url( $image ) . '">' . "\n";
+	echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
+	echo '<meta name="twitter:title" content="' . esc_attr( $title ) . '">' . "\n";
+	echo '<meta name="twitter:description" content="' . esc_attr( $description ) . '">' . "\n";
+	echo '<meta name="twitter:image" content="' . esc_url( $image ) . '">' . "\n";
+}
+add_action( 'wp_head', 'cobalt_logistics_meta_tags', 1 );
+
+/**
  * Fallback menu output when no primary menu is assigned yet.
  */
 function cobalt_logistics_fallback_menu() {
