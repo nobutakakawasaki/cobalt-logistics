@@ -721,3 +721,426 @@ function cobalt_logistics_handle_inquiry_submission() {
 }
 add_action( 'admin_post_cobalt_submit_inquiry', 'cobalt_logistics_handle_inquiry_submission' );
 add_action( 'admin_post_nopriv_cobalt_submit_inquiry', 'cobalt_logistics_handle_inquiry_submission' );
+
+/**
+ * ============================================================
+ * Staff registration / login / activity log
+ * (STAFF_AUTH_BRIEF.md)
+ * ============================================================
+ */
+
+/**
+ * Default staff registration code, used only as a fallback when the
+ * `cobalt_logistics_staff_registration_code` option has not been set yet.
+ *
+ * ★実運用時は必ずこの値を変更すること。この定数はデモ環境用のデフォルト値
+ * であり、本番運用前に wp-admin から `cobalt_logistics_staff_registration_code`
+ * オプション（例: `wp option update cobalt_logistics_staff_registration_code '<新しい値>'`）
+ * に別の値を設定し、このデフォルトのままにしないこと。
+ */
+define( 'COBALT_LOGISTICS_STAFF_REG_CODE_DEFAULT', 'COBALT-STAFF-2026' );
+
+/**
+ * Current staff registration code: the `cobalt_logistics_staff_registration_code`
+ * option if set, otherwise the demo default constant above.
+ *
+ * @return string
+ */
+function cobalt_logistics_get_staff_registration_code() {
+	$code = get_option( 'cobalt_logistics_staff_registration_code' );
+	return $code ? (string) $code : COBALT_LOGISTICS_STAFF_REG_CODE_DEFAULT;
+}
+
+/**
+ * Register the `activity_log` custom post type used to record "who did what,
+ * when" (logins + job/news/column edits). Same `public => false` admin-only
+ * pattern as the `inquiry` CPT above — this is internal data, not
+ * public-facing content.
+ */
+function cobalt_logistics_register_activity_log_cpt() {
+	$labels = array(
+		'name'               => __( '活動ログ', 'cobalt-logistics' ),
+		'singular_name'      => __( '活動ログ', 'cobalt-logistics' ),
+		'menu_name'          => __( '活動ログ', 'cobalt-logistics' ),
+		'all_items'          => __( '活動ログ一覧', 'cobalt-logistics' ),
+		'view_item'          => __( '活動ログを表示', 'cobalt-logistics' ),
+		'search_items'       => __( '活動ログを検索', 'cobalt-logistics' ),
+		'not_found'          => __( '活動ログはまだありません', 'cobalt-logistics' ),
+		'not_found_in_trash' => __( 'ゴミ箱に活動ログはありません', 'cobalt-logistics' ),
+	);
+
+	register_post_type(
+		'activity_log',
+		array(
+			'labels'          => $labels,
+			'public'          => false,
+			'show_ui'         => true,
+			'show_in_menu'    => true,
+			'capability_type' => 'post',
+			'supports'        => array( 'title' ),
+			'menu_icon'       => 'dashicons-list-view',
+			'menu_position'   => 27,
+		)
+	);
+}
+add_action( 'init', 'cobalt_logistics_register_activity_log_cpt' );
+
+/**
+ * Handle the staff-registration form submission (admin-post.php), same
+ * pattern as cobalt_logistics_handle_inquiry_submission() above: nonce
+ * check, sanitize, validate, redirect back to the form page with a
+ * `staff_register` status query arg (+ `staff_register_errors` on failure).
+ *
+ * Security-critical: the registration-code check below MUST run (and fail
+ * closed) before wp_insert_user() is ever called — a request without the
+ * correct code must not create a user. Password handling goes through
+ * wp_insert_user() only; this function never hashes, stores, or logs the
+ * plaintext password itself.
+ */
+function cobalt_logistics_handle_staff_registration() {
+	$redirect_url = cobalt_logistics_page_url( 'staff-register' );
+
+	if ( ! isset( $_POST['cobalt_staff_register_nonce'] ) || ! check_admin_referer( 'cobalt_staff_register', 'cobalt_staff_register_nonce' ) ) {
+		wp_safe_redirect( add_query_arg( 'staff_register', 'error', $redirect_url ) );
+		exit;
+	}
+
+	$name              = isset( $_POST['staff_name'] ) ? sanitize_text_field( wp_unslash( $_POST['staff_name'] ) ) : '';
+	$staff_id          = isset( $_POST['staff_id'] ) ? sanitize_text_field( wp_unslash( $_POST['staff_id'] ) ) : '';
+	$email             = isset( $_POST['staff_email'] ) ? sanitize_email( wp_unslash( $_POST['staff_email'] ) ) : '';
+	// Passwords are intentionally NOT run through sanitize_text_field() (which
+	// can silently strip/alter characters) — only wp_unslash(), matching how
+	// WordPress core itself reads $_POST['pwd'] in wp-login.php. The plaintext
+	// value only ever lives in these local variables for the duration of this
+	// request and is passed straight into wp_insert_user(), which hashes it
+	// internally; it is never stored, logged, or echoed anywhere by this code.
+	$password          = isset( $_POST['staff_password'] ) ? (string) wp_unslash( $_POST['staff_password'] ) : '';
+	$password_confirm  = isset( $_POST['staff_password_confirm'] ) ? (string) wp_unslash( $_POST['staff_password_confirm'] ) : '';
+	$reg_code          = isset( $_POST['staff_reg_code'] ) ? sanitize_text_field( wp_unslash( $_POST['staff_reg_code'] ) ) : '';
+
+	$errors = array();
+
+	if ( '' === $name ) {
+		$errors[] = 'name';
+	}
+
+	if ( '' === $staff_id || ! preg_match( '/^[A-Za-z0-9]+$/', $staff_id ) ) {
+		$errors[] = 'staff_id_format';
+	} elseif ( username_exists( $staff_id ) ) {
+		$errors[] = 'staff_id_taken';
+	}
+
+	if ( '' === $email || ! is_email( $email ) ) {
+		$errors[] = 'email_format';
+	} elseif ( email_exists( $email ) ) {
+		$errors[] = 'email_taken';
+	}
+
+	if ( mb_strlen( $password ) < 8 ) {
+		$errors[] = 'password_length';
+	} elseif ( $password !== $password_confirm ) {
+		$errors[] = 'password_mismatch';
+	}
+
+	// Registration-code gate — hash_equals() for constant-time comparison.
+	// This MUST be checked (and MUST block user creation on failure)
+	// regardless of what else is valid on the form.
+	if ( ! hash_equals( cobalt_logistics_get_staff_registration_code(), $reg_code ) ) {
+		$errors[] = 'reg_code';
+	}
+
+	if ( ! empty( $errors ) ) {
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'staff_register'        => 'error',
+					'staff_register_errors' => implode( ',', $errors ),
+				),
+				$redirect_url
+			)
+		);
+		exit;
+	}
+
+	// wp_insert_user() hashes the password internally (core's
+	// wp_hash_password()) — this function never calls a hashing function
+	// directly and never persists the plaintext anywhere else.
+	$user_id = wp_insert_user(
+		array(
+			'user_login'   => $staff_id,
+			'user_pass'    => $password,
+			'user_email'   => $email,
+			'display_name' => $name,
+			'nickname'     => $name,
+			'role'         => 'editor', // Self-registered staff never get more than `editor` — no admin capabilities.
+		)
+	);
+
+	if ( is_wp_error( $user_id ) ) {
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'staff_register'        => 'error',
+					'staff_register_errors' => 'unknown',
+				),
+				$redirect_url
+			)
+		);
+		exit;
+	}
+
+	// Independent from user_login by design (STAFF_AUTH_BRIEF.md): same value
+	// today, but kept as its own user meta so a future change to the login-ID
+	// naming convention doesn't require touching user_login itself.
+	update_user_meta( $user_id, 'cobalt_staff_id', $staff_id );
+
+	wp_safe_redirect( add_query_arg( 'staff_register', 'success', $redirect_url ) );
+	exit;
+}
+add_action( 'admin_post_cobalt_staff_register', 'cobalt_logistics_handle_staff_registration' );
+add_action( 'admin_post_nopriv_cobalt_staff_register', 'cobalt_logistics_handle_staff_registration' );
+
+/**
+ * Handle the staff-login form submission (admin-post.php). Authenticates via
+ * wp_signon() (core session/cookie handling only, no custom auth/session
+ * code) and redirects to /wp-admin/ on success. On failure, always shows the
+ * same generic status regardless of the specific WP_Error wp_signon()
+ * returned (wrong 社員ID vs. wrong password) — see page-staff-login.php for
+ * the rendered message — to avoid leaking whether a given 社員ID exists.
+ */
+function cobalt_logistics_handle_staff_login() {
+	$redirect_url = cobalt_logistics_page_url( 'staff-login' );
+
+	if ( ! isset( $_POST['cobalt_staff_login_nonce'] ) || ! check_admin_referer( 'cobalt_staff_login', 'cobalt_staff_login_nonce' ) ) {
+		wp_safe_redirect( add_query_arg( 'staff_login', 'error', $redirect_url ) );
+		exit;
+	}
+
+	$staff_id = isset( $_POST['staff_login_id'] ) ? sanitize_text_field( wp_unslash( $_POST['staff_login_id'] ) ) : '';
+	// Not sanitized with sanitize_text_field() for the same reason as in
+	// cobalt_logistics_handle_staff_registration() above — only wp_unslash(),
+	// passed straight into wp_signon(), never stored/logged.
+	$password = isset( $_POST['staff_login_password'] ) ? (string) wp_unslash( $_POST['staff_login_password'] ) : '';
+
+	if ( '' === $staff_id || '' === $password ) {
+		wp_safe_redirect( add_query_arg( 'staff_login', 'error', $redirect_url ) );
+		exit;
+	}
+
+	$user = wp_signon(
+		array(
+			'user_login'    => $staff_id,
+			'user_password' => $password,
+			'remember'      => true,
+		),
+		is_ssl()
+	);
+
+	if ( is_wp_error( $user ) ) {
+		wp_safe_redirect( add_query_arg( 'staff_login', 'error', $redirect_url ) );
+		exit;
+	}
+
+	wp_safe_redirect( admin_url() );
+	exit;
+}
+add_action( 'admin_post_cobalt_staff_login', 'cobalt_logistics_handle_staff_login' );
+add_action( 'admin_post_nopriv_cobalt_staff_login', 'cobalt_logistics_handle_staff_login' );
+
+/**
+ * Additive `authenticate` filter: lets a 社員ID (matched via the
+ * `cobalt_staff_id` user meta set at registration) be used in place of
+ * user_login when signing in. Hooked at priority 21 — strictly AFTER
+ * WordPress core's own username (`wp_authenticate_username_password`,
+ * priority 20) and email (`wp_authenticate_email_password`, priority 20)
+ * checks — so it only ever runs as a fallback once those have already
+ * failed to resolve a user; existing username/email login is completely
+ * unaffected (this filter returns the already-resolved $user unchanged
+ * whenever $user is already a WP_User by the time it runs).
+ *
+ * When a 社員ID match is found, the submitted identifier is translated to
+ * the matching user's real user_login and handed to
+ * wp_authenticate_username_password() — i.e. this delegates back into core's
+ * own password-check logic rather than reimplementing any authentication or
+ * hashing itself.
+ *
+ * @param WP_User|WP_Error|null $user     Result of previous authenticate filters.
+ * @param string                $username Submitted username/社員ID/email.
+ * @param string                $password Submitted password.
+ * @return WP_User|WP_Error|null
+ */
+function cobalt_logistics_authenticate_staff_id( $user, $username, $password ) {
+	if ( $user instanceof WP_User ) {
+		return $user;
+	}
+
+	if ( empty( $username ) || empty( $password ) ) {
+		return $user;
+	}
+
+	$matches = get_users(
+		array(
+			'meta_key'   => 'cobalt_staff_id',
+			'meta_value' => sanitize_text_field( $username ),
+			'number'     => 1,
+			'fields'     => 'all',
+		)
+	);
+
+	if ( empty( $matches ) ) {
+		// No 社員ID matched — leave whatever core's own filters already
+		// produced (a WP_Error, or null) untouched.
+		return $user;
+	}
+
+	return wp_authenticate_username_password( null, $matches[0]->user_login, $password );
+}
+add_filter( 'authenticate', 'cobalt_logistics_authenticate_staff_id', 21, 3 );
+
+/**
+ * Record a single activity_log entry.
+ *
+ * @param string $title Log post title (e.g. "ログイン: 山田太郎").
+ * @param string $type  'login' or 'edit'.
+ * @param array  $meta  Extra post meta to store (e.g. log_user_id, log_post_id).
+ */
+function cobalt_logistics_log_activity( $title, $type, $meta = array() ) {
+	$log_id = wp_insert_post(
+		array(
+			'post_type'   => 'activity_log',
+			'post_title'  => sanitize_text_field( $title ),
+			'post_status' => 'publish',
+		),
+		true
+	);
+
+	if ( is_wp_error( $log_id ) || ! $log_id ) {
+		return;
+	}
+
+	update_post_meta( $log_id, 'log_type', sanitize_key( $type ) );
+	foreach ( $meta as $meta_key => $meta_value ) {
+		update_post_meta( $log_id, $meta_key, $meta_value );
+	}
+}
+
+/**
+ * Log successful logins (`wp_login` fires only on success, both from the
+ * new staff-login flow above and from normal wp-login.php).
+ *
+ * @param string  $user_login Logged-in user's user_login.
+ * @param WP_User $user       Logged-in user object.
+ */
+function cobalt_logistics_log_login( $user_login, $user ) {
+	$display_name = ( $user instanceof WP_User ) ? $user->display_name : $user_login;
+
+	cobalt_logistics_log_activity(
+		'ログイン: ' . $display_name,
+		'login',
+		array(
+			'log_user_id' => ( $user instanceof WP_User ) ? $user->ID : 0,
+		)
+	);
+}
+add_action( 'wp_login', 'cobalt_logistics_log_login', 10, 2 );
+
+/**
+ * Log job/news/column edits via `save_post`. Excludes autosaves/revisions,
+ * and only logs the `job` and `post` (news/column) post types — explicitly
+ * NOT `activity_log` itself (would infinite-loop: logging an edit would
+ * create a new activity_log post, which would itself fire save_post...) and
+ * NOT `inquiry` (internal submission data, not staff-authored content), per
+ * STAFF_AUTH_BRIEF.md's noise/loop-prevention requirement.
+ *
+ * Also excludes `post_status === 'auto-draft'`: WordPress core's dashboard
+ * "Quick Draft" widget silently creates an empty auto-draft `post`-type post
+ * (via get_default_post_to_edit()) on ordinary dashboard page loads — this
+ * is a real save_post firing that is neither an autosave nor a revision, so
+ * wp_is_post_autosave()/wp_is_post_revision() alone don't catch it, but
+ * logging it would spam "編集: 自動下書き" on every dashboard visit, which is
+ * exactly the kind of log noise this feature must avoid.
+ *
+ * @param int     $post_id Post ID.
+ * @param WP_Post $post    Post object.
+ * @param bool    $update  Whether this is an existing post being updated.
+ */
+function cobalt_logistics_log_post_edit( $post_id, $post, $update ) {
+	if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
+		return;
+	}
+
+	if ( 'auto-draft' === $post->post_status ) {
+		return;
+	}
+
+	if ( ! in_array( $post->post_type, array( 'job', 'post' ), true ) ) {
+		return;
+	}
+
+	cobalt_logistics_log_activity(
+		'編集: ' . $post->post_title,
+		'edit',
+		array(
+			'log_user_id' => get_current_user_id(),
+			'log_post_id' => $post_id,
+		)
+	);
+}
+add_action( 'save_post', 'cobalt_logistics_log_post_edit', 10, 3 );
+
+/**
+ * Dashboard widget: most recent 20 activity_log entries, newest first.
+ */
+function cobalt_logistics_register_dashboard_widget() {
+	wp_add_dashboard_widget(
+		'cobalt_logistics_activity_log_widget',
+		__( '活動ログ（直近20件）', 'cobalt-logistics' ),
+		'cobalt_logistics_render_dashboard_widget'
+	);
+}
+add_action( 'wp_dashboard_setup', 'cobalt_logistics_register_dashboard_widget' );
+
+/**
+ * Render the activity-log dashboard widget content.
+ */
+function cobalt_logistics_render_dashboard_widget() {
+	$query = new WP_Query(
+		array(
+			'post_type'      => 'activity_log',
+			'post_status'    => 'publish',
+			'posts_per_page' => 20,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+		)
+	);
+
+	if ( ! $query->have_posts() ) {
+		echo '<p>まだ活動ログがありません。</p>';
+		return;
+	}
+
+	echo '<table class="widefat striped"><thead><tr><th>日時</th><th>種別</th><th>内容</th><th>ユーザー</th></tr></thead><tbody>';
+
+	while ( $query->have_posts() ) {
+		$query->the_post();
+		$log_id       = get_the_ID();
+		$log_type     = get_post_meta( $log_id, 'log_type', true );
+		$log_user_id  = (int) get_post_meta( $log_id, 'log_user_id', true );
+		$log_user     = $log_user_id ? get_userdata( $log_user_id ) : false;
+		$type_labels  = array(
+			'login' => 'ログイン',
+			'edit'  => '編集',
+		);
+		$type_label   = isset( $type_labels[ $log_type ] ) ? $type_labels[ $log_type ] : $log_type;
+
+		echo '<tr>';
+		echo '<td>' . esc_html( get_the_date( 'Y-m-d H:i' ) ) . '</td>';
+		echo '<td>' . esc_html( $type_label ) . '</td>';
+		echo '<td>' . esc_html( get_the_title() ) . '</td>';
+		echo '<td>' . esc_html( $log_user ? $log_user->display_name : '-' ) . '</td>';
+		echo '</tr>';
+	}
+
+	echo '</tbody></table>';
+	wp_reset_postdata();
+}
