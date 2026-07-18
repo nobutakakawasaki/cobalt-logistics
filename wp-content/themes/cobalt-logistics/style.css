@@ -4,7 +4,7 @@ Theme URI: https://example.com/cobalt-logistics
 Author: 5kimac
 Author URI: https://example.com
 Description: コバルト物流株式会社 コーポレートサイト用クラシックPHPテーマ（架空クライアント想定のポートフォリオデモ制作）。
-Version: 1.6.0
+Version: 1.7.0
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: cobalt-logistics
@@ -1178,6 +1178,124 @@ button {
 	padding: 6px 14px;
 	border-radius: 999px;
 	white-space: nowrap;
+}
+
+/* .job-card is now wrapped in an <a> on page-recruit.php so the whole card
+   is clickable; the anchor resets link defaults and gets its own hover
+   feedback (lift + border color) on top of the existing card look. */
+.job-card-link {
+	display: block;
+	color: inherit;
+	text-decoration: none;
+	transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.job-card-link:hover,
+.job-card-link:focus-visible {
+	transform: translateY(-2px);
+}
+
+.job-card-link:hover .job-card,
+.job-card-link:focus-visible .job-card {
+	border-color: var(--cobalt);
+	box-shadow: 0 12px 28px rgba(30, 95, 204, 0.14);
+}
+
+.job-card-link:focus-visible {
+	outline: 2px solid var(--cobalt);
+	outline-offset: 2px;
+}
+
+.job-card__arrow {
+	color: var(--cobalt);
+	font-size: 1.2rem;
+	line-height: 1;
+	flex-shrink: 0;
+}
+
+/* single-job.php: hero meta chips (type / location / salary) on the
+   .page-hero gradient background. */
+.job-hero-meta {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 10px;
+	margin-top: 20px;
+	padding: 0;
+	list-style: none;
+}
+
+.job-hero-meta__item {
+	background: rgba(255, 255, 255, 0.15);
+	border: 1px solid rgba(255, 255, 255, 0.35);
+	color: var(--paper);
+	padding: 8px 16px;
+	border-radius: 999px;
+	font-size: 0.9rem;
+}
+
+/* single-job.php: body sections (仕事内容・必須スキル・歓迎スキル・求める人物像). */
+.job-body {
+	max-width: 760px;
+}
+
+.job-block {
+	padding: 28px 0;
+	border-bottom: 1px solid var(--line);
+}
+
+.job-block:first-child {
+	padding-top: 0;
+}
+
+.job-block__title {
+	font-size: 1.2rem;
+	margin-bottom: 12px;
+	color: var(--cobalt-deep);
+}
+
+.job-block__text {
+	color: var(--ink-muted);
+	margin: 0;
+}
+
+.job-bullet-list {
+	display: grid;
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.job-bullet-list li {
+	position: relative;
+	padding-left: 22px;
+	color: var(--ink-muted);
+}
+
+.job-bullet-list li::before {
+	content: '';
+	position: absolute;
+	left: 2px;
+	top: 0.55em;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--cobalt);
+}
+
+.job-body__cta {
+	margin-top: 40px;
+}
+
+.job-body__back {
+	margin-top: 24px;
+	text-align: center;
+}
+
+.job-body__back a {
+	color: var(--cobalt);
+	font-weight: 600;
 }
 
 .perks-grid {

@@ -175,6 +175,170 @@ function cobalt_logistics_register_inquiry_cpt() {
 add_action( 'init', 'cobalt_logistics_register_inquiry_cpt' );
 
 /**
+ * Register the `job` custom post type used for job listing detail pages,
+ * linked to from the RECRUIT page's 募集職種 cards. Unlike `inquiry`
+ * (internal submission data), `job` posts are real public content, so this
+ * is public-facing with a single template (single-job.php) and a normal
+ * admin menu for editing.
+ */
+function cobalt_logistics_register_job_cpt() {
+	$labels = array(
+		'name'               => __( '求人', 'cobalt-logistics' ),
+		'singular_name'      => __( '求人', 'cobalt-logistics' ),
+		'menu_name'          => __( '求人', 'cobalt-logistics' ),
+		'all_items'          => __( '求人一覧', 'cobalt-logistics' ),
+		'add_new_item'       => __( '求人を追加', 'cobalt-logistics' ),
+		'edit_item'          => __( '求人を編集', 'cobalt-logistics' ),
+		'view_item'          => __( '求人を表示', 'cobalt-logistics' ),
+		'search_items'       => __( '求人を検索', 'cobalt-logistics' ),
+		'not_found'          => __( '求人はまだありません', 'cobalt-logistics' ),
+		'not_found_in_trash' => __( 'ゴミ箱に求人はありません', 'cobalt-logistics' ),
+	);
+
+	register_post_type(
+		'job',
+		array(
+			'labels'          => $labels,
+			'public'          => true,
+			'show_ui'         => true,
+			'show_in_menu'    => true,
+			'has_archive'     => false,
+			'rewrite'         => array( 'slug' => 'job' ),
+			'capability_type' => 'post',
+			'supports'        => array( 'title' ),
+			'menu_icon'       => 'dashicons-businessman',
+			'menu_position'   => 26,
+		)
+	);
+}
+add_action( 'init', 'cobalt_logistics_register_job_cpt' );
+
+/**
+ * Flush rewrite rules once after the `job` CPT is registered, so
+ * /job/<slug>/ works immediately on a fresh environment (e.g. someone
+ * re-provisioning this Docker setup from scratch) without needing to
+ * remember a manual `wp rewrite flush`. Runs on every request but only
+ * actually flushes once, guarded by an option flag — flush_rewrite_rules()
+ * is comparatively expensive, so this must not run unconditionally.
+ */
+function cobalt_logistics_maybe_flush_rewrite_rules() {
+	if ( ! get_option( 'cobalt_logistics_rewrite_flushed' ) ) {
+		flush_rewrite_rules();
+		update_option( 'cobalt_logistics_rewrite_flushed', '1' );
+	}
+}
+add_action( 'init', 'cobalt_logistics_maybe_flush_rewrite_rules', 20 );
+
+/**
+ * Seed the 5 job listings once, on first run. This is the actual content
+ * source of truth (not a DB dump) — the job posts were originally created
+ * via a one-off ad-hoc script that was never committed, which meant a fresh
+ * `git clone` + `docker compose up` reproduced the theme/CPT code but zero
+ * job listings. Guarded the same way as the rewrite-flush above: runs on
+ * every request, but the get_option() check makes it a no-op after the
+ * first successful run, and re-running with existing slugs is additionally
+ * idempotent via get_page_by_path() (post_type-aware) checks per job.
+ */
+function cobalt_logistics_seed_jobs() {
+	if ( get_option( 'cobalt_logistics_jobs_seeded' ) ) {
+		return;
+	}
+
+	$jobs = array(
+		array(
+			'slug'     => 'warehouse-operation',
+			'title'    => '倉庫内オペレーションスタッフ',
+			'order'    => 1,
+			'type'     => '正社員/契約社員',
+			'location' => '横浜本社倉庫',
+			'salary'   => '契約社員 時給1,300円〜／正社員 月給22万円〜（経験・能力による）',
+			'summary'  => '入荷検品、ピッキング、梱包、出荷準備等の倉庫内作業全般をお任せします。WMS端末を使用した在庫管理業務も含みます。',
+			'required' => "未経験可（研修制度あり）\n基本的なPC操作（データ入力程度）",
+			'preferred' => "物流・倉庫業務の実務経験\nフォークリフト運転技能講習修了者\nWMS（倉庫管理システム）の使用経験",
+			'profile'  => "チームで協力して業務を進められる方\n繁忙期の変動にも柔軟に対応できる方\n正確性とスピードを両立させる意識のある方",
+		),
+		array(
+			'slug'     => 'logistics-manager',
+			'title'    => '物流管理職',
+			'order'    => 2,
+			'type'     => '正社員',
+			'location' => '横浜本社',
+			'salary'   => '月給28万円〜45万円（経験・能力による）',
+			'summary'  => '倉庫内オペレーションの管理・改善、KPI管理、シフト管理、クライアント対応、新規案件立ち上げ時のオペレーション設計を担っていただきます。',
+			'required' => "物流・倉庫運営における実務経験3年以上\nスタッフマネジメント経験\nExcel等を用いたデータ分析・KPI管理経験",
+			'preferred' => "3PL/EC物流企業での勤務経験\nWMS導入・改善プロジェクトの経験\n中小規模チームのマネジメント経験",
+			'profile'  => "現場と数字の両方を見ながら改善を進められる方\nクライアントの要望を汲み取り、社内に落とし込める方\n変化の多い環境を前向きに楽しめる方",
+		),
+		array(
+			'slug'     => 'delivery-coordinator',
+			'title'    => '配送コーディネーター',
+			'order'    => 3,
+			'type'     => '正社員',
+			'location' => '横浜本社',
+			'salary'   => '月給24万円〜32万円',
+			'summary'  => '複数運送会社との配送手配調整、配送ルート最適化、遅延時のリカバリー対応、配送コスト管理をお任せします。',
+			'required' => "物流・運送業界での実務経験（配車・配送調整等）\n基本的なPCスキル（Excel関数レベル）",
+			'preferred' => "複数の運送会社との折衝経験\n配送管理システムの使用経験\n普通自動車運転免許",
+			'profile'  => "急な変更にも冷静に対応できる方\n社外（運送会社）・社内双方と円滑にコミュニケーションが取れる方\nコスト意識を持って業務を進められる方",
+		),
+		array(
+			'slug'     => 'customer-support',
+			'title'    => 'カスタマーサポートスタッフ',
+			'order'    => 4,
+			'type'     => '契約社員',
+			'location' => '横浜本社',
+			'salary'   => '時給1,350円〜',
+			'summary'  => 'クライアント（EC事業者）からの問い合わせ対応（電話・メール・チャット）、出荷状況の確認・回答、社内関連部署との連携をお任せします。',
+			'required' => "電話・メール対応の実務経験\n基本的なPC操作（Excel、メールソフト）",
+			'preferred' => "EC・物流業界でのカスタマーサポート経験\nCRM/問い合わせ管理システムの使用経験",
+			'profile'  => "丁寧で分かりやすい対応ができる方\n複数の問い合わせを整理しながら対応できる方\nクライアント目線で考えられる方",
+		),
+		array(
+			'slug'     => 'new-graduate',
+			'title'    => '新卒採用（総合職）',
+			'order'    => 5,
+			'type'     => '正社員',
+			'location' => '横浜本社倉庫（入社後、配属先は適性に応じて決定）',
+			'salary'   => '月給22万円〜（初任給）',
+			'summary'  => '入社後は倉庫内オペレーションから研修をスタートし、適性に応じて物流管理・配送コーディネート・カスタマーサポート等の部署に配属します。',
+			'required' => '卒業見込みの方（大学・大学院・専門学校等）',
+			'preferred' => "物流・小売・EC業界でのアルバイト経験\nチームでの活動経験（部活動・サークル・ゼミ等）",
+			'profile'  => "現場の仕事に興味・関心がある方\n学び続ける姿勢がある方\n将来的にマネジメントに挑戦したい方",
+		),
+	);
+
+	foreach ( $jobs as $job ) {
+		$existing = get_page_by_path( $job['slug'], OBJECT, 'job' );
+		if ( $existing ) {
+			continue;
+		}
+
+		$post_id = wp_insert_post(
+			array(
+				'post_type'   => 'job',
+				'post_title'  => $job['title'],
+				'post_name'   => $job['slug'],
+				'post_status' => 'publish',
+				'menu_order'  => $job['order'],
+			)
+		);
+
+		if ( $post_id && ! is_wp_error( $post_id ) ) {
+			update_post_meta( $post_id, 'job_type', $job['type'] );
+			update_post_meta( $post_id, 'job_location', $job['location'] );
+			update_post_meta( $post_id, 'job_salary', $job['salary'] );
+			update_post_meta( $post_id, 'job_summary', $job['summary'] );
+			update_post_meta( $post_id, 'job_required', $job['required'] );
+			update_post_meta( $post_id, 'job_preferred', $job['preferred'] );
+			update_post_meta( $post_id, 'job_profile', $job['profile'] );
+		}
+	}
+
+	update_option( 'cobalt_logistics_jobs_seeded', '1' );
+}
+add_action( 'init', 'cobalt_logistics_seed_jobs', 21 );
+
+/**
  * Custom admin list columns for the `inquiry` post type: name (title),
  * company, email, inquiry type, a message excerpt, and submission date.
  *

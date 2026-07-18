@@ -21,43 +21,39 @@ get_header();
 	<section class="section">
 		<div class="container">
 			<h2 class="section-title">募集職種</h2>
-			<div class="job-list">
-				<div class="job-card">
-					<div>
-						<p class="job-card__title">倉庫内オペレーションスタッフ</p>
-						<p class="job-card__meta">横浜本社倉庫</p>
-					</div>
-					<span class="job-card__badge">正社員/契約社員</span>
+			<?php
+			$cobalt_job_query = new WP_Query(
+				array(
+					'post_type'      => 'job',
+					'post_status'    => 'publish',
+					'posts_per_page' => -1,
+					'orderby'        => 'menu_order',
+					'order'          => 'ASC',
+				)
+			);
+			?>
+			<?php if ( $cobalt_job_query->have_posts() ) : ?>
+				<div class="job-list">
+					<?php
+					while ( $cobalt_job_query->have_posts() ) :
+						$cobalt_job_query->the_post();
+						?>
+						<a class="job-card-link" href="<?php the_permalink(); ?>">
+							<div class="job-card">
+								<div>
+									<p class="job-card__title"><?php the_title(); ?></p>
+									<p class="job-card__meta"><?php echo esc_html( get_post_meta( get_the_ID(), 'job_location', true ) ); ?></p>
+								</div>
+								<span class="job-card__badge"><?php echo esc_html( get_post_meta( get_the_ID(), 'job_type', true ) ); ?></span>
+								<span class="job-card__arrow" aria-hidden="true">&rarr;</span>
+							</div>
+						</a>
+						<?php
+					endwhile;
+					?>
 				</div>
-				<div class="job-card">
-					<div>
-						<p class="job-card__title">物流管理職</p>
-						<p class="job-card__meta">横浜本社</p>
-					</div>
-					<span class="job-card__badge">正社員</span>
-				</div>
-				<div class="job-card">
-					<div>
-						<p class="job-card__title">配送コーディネーター</p>
-						<p class="job-card__meta">横浜本社</p>
-					</div>
-					<span class="job-card__badge">正社員</span>
-				</div>
-				<div class="job-card">
-					<div>
-						<p class="job-card__title">カスタマーサポートスタッフ</p>
-						<p class="job-card__meta">横浜本社</p>
-					</div>
-					<span class="job-card__badge">契約社員</span>
-				</div>
-				<div class="job-card">
-					<div>
-						<p class="job-card__title">新卒採用（総合職）</p>
-						<p class="job-card__meta">横浜本社倉庫</p>
-					</div>
-					<span class="job-card__badge">正社員</span>
-				</div>
-			</div>
+				<?php wp_reset_postdata(); ?>
+			<?php endif; ?>
 		</div>
 	</section>
 
