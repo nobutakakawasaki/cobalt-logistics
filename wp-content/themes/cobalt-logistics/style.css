@@ -4,7 +4,7 @@ Theme URI: https://example.com/cobalt-logistics
 Author: 5kimac
 Author URI: https://example.com
 Description: コバルト物流株式会社 コーポレートサイト用クラシックPHPテーマ（架空クライアント想定のポートフォリオデモ制作）。
-Version: 1.11.4
+Version: 1.11.6
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: cobalt-logistics
@@ -53,10 +53,12 @@ Text Domain: cobalt-logistics
 
 html {
 	scroll-behavior: smooth;
+	overflow-x: hidden;
 }
 
 body {
 	margin: 0;
+	overflow-x: hidden;
 	font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic",
 		"Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
 	color: var(--ink);
@@ -466,8 +468,6 @@ button {
 	font-size: clamp(2.1rem, 5.5vw, 3.4rem);
 	margin-bottom: 20px;
 	text-shadow: 0 1px 3px rgba(6, 26, 64, 0.55), 0 4px 18px rgba(6, 26, 64, 0.35);
-	word-break: keep-all;
-	overflow-wrap: break-word;
 }
 
 .hero__lead {
@@ -536,6 +536,7 @@ button {
 
 .hero__content {
 	max-width: 560px;
+	min-width: 0;
 }
 
 /* Delivery-manifest style vertical stat list, replacing the old 4-up
@@ -543,6 +544,7 @@ button {
 .hero-manifest {
 	display: grid;
 	gap: 0;
+	min-width: 0;
 	border-top: 1px solid rgba(255, 255, 255, 0.25);
 }
 
@@ -553,6 +555,11 @@ button {
 	gap: 16px;
 	padding: 16px 0;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.hero-manifest__item .stat-label,
+.hero-manifest__item .stat-number {
+	min-width: 0;
 }
 
 .hero-manifest .stat-label {
