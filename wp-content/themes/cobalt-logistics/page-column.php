@@ -2,9 +2,11 @@
 /**
  * Template Name: コラム
  *
- * Listing page for the `column` category (post_type=post). Cards show
+ * Listing page for the `column_article` custom post type (see
+ * NEWS_COLUMN_CPT_MIGRATION_BRIEF.md — replaces the original `post` +
+ * `column` category query from NEWS_COLUMN_BRIEF.md). Cards show
  * date + title + excerpt + "続きを読む" link, styled to match the existing
- * .job-card look (see NEWS_COLUMN_BRIEF.md).
+ * .job-card look.
  *
  * @package Cobalt_Logistics
  */
@@ -27,7 +29,7 @@ get_header();
 			<?php
 			$cobalt_column_query = new WP_Query(
 				array(
-					'category_name'  => 'column',
+					'post_type'      => 'column_article',
 					'post_status'    => 'publish',
 					'posts_per_page' => -1,
 					'orderby'        => 'date',

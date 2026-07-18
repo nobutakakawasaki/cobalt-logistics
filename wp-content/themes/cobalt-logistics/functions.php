@@ -83,8 +83,9 @@ function cobalt_logistics_article_excerpt( $post, $length = 88 ) {
  * Per-page meta description + Open Graph/Twitter Card tags. Static pages
  * (home/service/recruit/etc., including the news/column listing pages) use
  * hand-written per-slug descriptions since they have no post content to
- * summarize from. Individual news/column articles (post_type=post,
- * single.php) instead get an auto-generated description from their own
+ * summarize from. Individual news/column articles (post_type=news_article
+ * or column_article, single-news_article.php/single-column_article.php)
+ * instead get an auto-generated description from their own
  * content via cobalt_logistics_article_excerpt().
  */
 function cobalt_logistics_meta_tags() {
@@ -106,7 +107,7 @@ function cobalt_logistics_meta_tags() {
 		$description = isset( $descriptions[ $slug ] ) ? $descriptions[ $slug ] : $descriptions['home'];
 		$title       = is_front_page() ? get_bloginfo( 'name' ) . ' – EC物流代行・倉庫保管・輸配送手配・流通加工' : get_the_title() . ' – ' . get_bloginfo( 'name' );
 		$image       = get_template_directory_uri() . '/assets/images/facility-exterior.jpg';
-	} elseif ( is_singular( 'post' ) ) {
+	} elseif ( is_singular( array( 'news_article', 'column_article' ) ) ) {
 		global $post;
 		$description = cobalt_logistics_article_excerpt( $post, 120 );
 		$title       = get_the_title( $post ) . ' – ' . get_bloginfo( 'name' );
@@ -257,17 +258,119 @@ function cobalt_logistics_register_job_cpt() {
 add_action( 'init', 'cobalt_logistics_register_job_cpt' );
 
 /**
- * Flush rewrite rules once after the `job` CPT is registered, so
- * /job/<slug>/ works immediately on a fresh environment (e.g. someone
- * re-provisioning this Docker setup from scratch) without needing to
- * remember a manual `wp rewrite flush`. Runs on every request but only
- * actually flushes once, guarded by an option flag — flush_rewrite_rules()
- * is comparatively expensive, so this must not run unconditionally.
+ * Register the `news_article` custom post type (NEWS_COLUMN_CPT_MIGRATION_BRIEF.md
+ * #9). Replaces the old `post` + `news` category approach: since staff picked
+ * up self-service registration/publishing, that design let a published post
+ * silently fail to appear on /news/ if the category checkbox was left
+ * unchecked (happened twice in practice, no error shown). A dedicated CPT
+ * with no classification step removes that failure mode entirely — same
+ * rationale and exact same structure as `job` above, which has never had
+ * this problem.
+ *
+ * Post type slug is deliberately NOT `news` (that's already the post_name of
+ * the "お知らせ" listing page, /news/ — a same-slug CPT would collide with
+ * it), and the rewrite slug is `news-post` for the same reason (keeps
+ * /news/ as the static listing page, individual articles live at
+ * /news-post/<slug>/).
+ */
+function cobalt_logistics_register_news_article_cpt() {
+	$labels = array(
+		'name'               => __( 'お知らせ', 'cobalt-logistics' ),
+		'singular_name'      => __( 'お知らせ', 'cobalt-logistics' ),
+		'menu_name'          => __( 'お知らせ', 'cobalt-logistics' ),
+		'all_items'          => __( 'お知らせ一覧', 'cobalt-logistics' ),
+		'add_new_item'       => __( 'お知らせを追加', 'cobalt-logistics' ),
+		'edit_item'          => __( 'お知らせを編集', 'cobalt-logistics' ),
+		'view_item'          => __( 'お知らせを表示', 'cobalt-logistics' ),
+		'search_items'       => __( 'お知らせを検索', 'cobalt-logistics' ),
+		'not_found'          => __( 'お知らせはまだありません', 'cobalt-logistics' ),
+		'not_found_in_trash' => __( 'ゴミ箱にお知らせはありません', 'cobalt-logistics' ),
+	);
+
+	register_post_type(
+		'news_article',
+		array(
+			'labels'          => $labels,
+			'public'          => true,
+			'show_ui'         => true,
+			'show_in_menu'    => true,
+			'has_archive'     => false,
+			'rewrite'         => array( 'slug' => 'news-post' ),
+			'capability_type' => 'post',
+			'supports'        => array( 'title', 'editor' ),
+			'menu_icon'       => 'dashicons-megaphone',
+			'menu_position'   => 22,
+		)
+	);
+}
+add_action( 'init', 'cobalt_logistics_register_news_article_cpt' );
+
+/**
+ * Register the `column_article` custom post type. Same rationale/structure
+ * as `news_article` above — see its docblock — for the `column` category's
+ * equivalent "forgot to check the box" failure.
+ *
+ * Post type slug is `column_article` (not `column`, already the listing
+ * page's slug), rewrite slug is `column-post` (not `column`, same reason).
+ */
+function cobalt_logistics_register_column_article_cpt() {
+	$labels = array(
+		'name'               => __( 'コラム', 'cobalt-logistics' ),
+		'singular_name'      => __( 'コラム', 'cobalt-logistics' ),
+		'menu_name'          => __( 'コラム', 'cobalt-logistics' ),
+		'all_items'          => __( 'コラム一覧', 'cobalt-logistics' ),
+		'add_new_item'       => __( 'コラムを追加', 'cobalt-logistics' ),
+		'edit_item'          => __( 'コラムを編集', 'cobalt-logistics' ),
+		'view_item'          => __( 'コラムを表示', 'cobalt-logistics' ),
+		'search_items'       => __( 'コラムを検索', 'cobalt-logistics' ),
+		'not_found'          => __( 'コラムはまだありません', 'cobalt-logistics' ),
+		'not_found_in_trash' => __( 'ゴミ箱にコラムはありません', 'cobalt-logistics' ),
+	);
+
+	register_post_type(
+		'column_article',
+		array(
+			'labels'          => $labels,
+			'public'          => true,
+			'show_ui'         => true,
+			'show_in_menu'    => true,
+			'has_archive'     => false,
+			'rewrite'         => array( 'slug' => 'column-post' ),
+			'capability_type' => 'post',
+			'supports'        => array( 'title', 'editor' ),
+			'menu_icon'       => 'dashicons-edit',
+			'menu_position'   => 23,
+		)
+	);
+}
+add_action( 'init', 'cobalt_logistics_register_column_article_cpt' );
+
+/**
+ * Flush rewrite rules once after the `job`/`news_article`/`column_article`
+ * CPTs are registered, so their permalinks work immediately on a fresh
+ * environment (e.g. someone re-provisioning this Docker setup from scratch)
+ * without needing to remember a manual `wp rewrite flush`. Runs on every
+ * request but only actually flushes once per guard version, gated by an
+ * option flag — flush_rewrite_rules() is comparatively expensive, so this
+ * must not run unconditionally.
+ *
+ * The flag is versioned (`_v2` suffix) rather than reusing the original
+ * `cobalt_logistics_rewrite_flushed` flag from when only `job` existed:
+ * that flag is already permanently set to '1' on any environment that has
+ * ever loaded a single request post-`job`-CPT, so reusing it would mean the
+ * newly-added `news_article`/`column_article` rewrite rules (added in
+ * NEWS_COLUMN_CPT_MIGRATION_BRIEF.md #9) would never actually get flushed
+ * in and their /news-post/<slug>/ and /column-post/<slug>/ URLs would 404.
+ * Bumping the flag name forces exactly one more flush (covering all three
+ * CPTs' current rewrite rules), after which it goes back to being a cheap
+ * no-op on every subsequent request, same as before. Any future CPT/rewrite
+ * addition should bump this suffix again (e.g. `_v3`) rather than
+ * reintroduce the original bug.
  */
 function cobalt_logistics_maybe_flush_rewrite_rules() {
-	if ( ! get_option( 'cobalt_logistics_rewrite_flushed' ) ) {
+	if ( ! get_option( 'cobalt_logistics_rewrite_flushed_v2' ) ) {
 		flush_rewrite_rules();
-		update_option( 'cobalt_logistics_rewrite_flushed', '1' );
+		update_option( 'cobalt_logistics_rewrite_flushed_v2', '1' );
 	}
 }
 add_action( 'init', 'cobalt_logistics_maybe_flush_rewrite_rules', 20 );
@@ -382,47 +485,30 @@ function cobalt_logistics_seed_jobs() {
 add_action( 'init', 'cobalt_logistics_seed_jobs', 21 );
 
 /**
- * Create the `news`/`column` categories used by the news/column feature
- * (NEWS_COLUMN_BRIEF.md). Idempotent — checks term_exists() first — and
- * runs on every `init`, matching the pattern already used for the `job`
- * CPT's rewrite-flush guard above. Unlike that guard this doesn't need its
- * own option flag: wp_insert_term()/term_exists() are cheap term-table
- * lookups, not the expensive full rewrite-rule rebuild flush_rewrite_rules()
- * does, so there's no performance reason to gate it behind a one-time flag.
- */
-function cobalt_logistics_seed_news_column_categories() {
-	if ( ! term_exists( 'news', 'category' ) ) {
-		wp_insert_term( 'お知らせ', 'category', array( 'slug' => 'news' ) );
-	}
-	if ( ! term_exists( 'column', 'category' ) ) {
-		wp_insert_term( 'コラム', 'category', array( 'slug' => 'column' ) );
-	}
-}
-add_action( 'init', 'cobalt_logistics_seed_news_column_categories', 23 );
-
-/**
- * Seed the 5 news posts + 4 column posts once, on first run. Same rationale
- * and pattern as cobalt_logistics_seed_jobs() above: this is the real
- * content source of truth, committed as PHP, not a one-off DB-only script —
- * that gap is exactly what broke the `job` feature's reproducibility before
- * it was fixed. Guarded by an option flag (no-op after first successful
- * run) and additionally idempotent per-post via get_page_by_path()
- * (post_type-aware), so re-running with existing slugs never duplicates.
- * Runs at priority 24, after cobalt_logistics_seed_news_column_categories()
- * (23) in the same `init` hook, so the category terms already exist.
+ * Seed the 5 news_article posts + 4 column_article posts once, on first run.
+ * Same rationale and pattern as cobalt_logistics_seed_jobs() above: this is
+ * the real content source of truth, committed as PHP, not a one-off
+ * DB-only script — that gap is exactly what broke the `job` feature's
+ * reproducibility before it was fixed. Guarded by an option flag (no-op
+ * after first successful run) and additionally idempotent per-post via
+ * get_page_by_path() (post_type-aware), so re-running with existing slugs
+ * never duplicates.
+ *
+ * Rewritten by NEWS_COLUMN_CPT_MIGRATION_BRIEF.md #9 to create
+ * `news_article`/`column_article` CPT posts directly instead of `post` +
+ * category assignment — see cobalt_logistics_register_news_article_cpt()
+ * for why. The `news`/`column` category terms this used to assign are no
+ * longer created or referenced here (existing terms, if any, are simply
+ * unused now — harmless to leave in place). The option flag name is
+ * unchanged from the original post+category seeder: the 9 articles this
+ * seeds are the same 9 articles either way, so a fresh environment that has
+ * never run either version behaves identically either way, and this repo's
+ * own live data was migrated in place (post_type updated on the existing 9
+ * posts) rather than reseeded, which is what keeps this flag already set to
+ * '1' here.
  */
 function cobalt_logistics_seed_news_column_posts() {
 	if ( get_option( 'cobalt_logistics_news_column_seeded' ) ) {
-		return;
-	}
-
-	$news_term   = get_term_by( 'slug', 'news', 'category' );
-	$column_term = get_term_by( 'slug', 'column', 'category' );
-
-	if ( ! $news_term || ! $column_term ) {
-		// Categories aren't in place yet — bail without setting the seeded
-		// flag so this retries on a later request instead of seeding posts
-		// with no category.
 		return;
 	}
 
@@ -544,46 +630,44 @@ TXT,
 	);
 
 	foreach ( $news_items as $item ) {
-		$existing = get_page_by_path( $item['slug'], OBJECT, 'post' );
+		$existing = get_page_by_path( $item['slug'], OBJECT, 'news_article' );
 		if ( $existing ) {
 			continue;
 		}
 
 		wp_insert_post(
 			array(
-				'post_type'     => 'post',
-				'post_title'    => $item['title'],
-				'post_name'     => $item['slug'],
-				'post_content'  => $item['content'],
-				'post_status'   => 'publish',
-				'post_date'     => $item['date'],
-				'post_category' => array( $news_term->term_id ),
+				'post_type'    => 'news_article',
+				'post_title'   => $item['title'],
+				'post_name'    => $item['slug'],
+				'post_content' => $item['content'],
+				'post_status'  => 'publish',
+				'post_date'    => $item['date'],
 			)
 		);
 	}
 
 	foreach ( $column_items as $item ) {
-		$existing = get_page_by_path( $item['slug'], OBJECT, 'post' );
+		$existing = get_page_by_path( $item['slug'], OBJECT, 'column_article' );
 		if ( $existing ) {
 			continue;
 		}
 
 		wp_insert_post(
 			array(
-				'post_type'     => 'post',
-				'post_title'    => $item['title'],
-				'post_name'     => $item['slug'],
-				'post_content'  => $item['content'],
-				'post_status'   => 'publish',
-				'post_date'     => $item['date'],
-				'post_category' => array( $column_term->term_id ),
+				'post_type'    => 'column_article',
+				'post_title'   => $item['title'],
+				'post_name'    => $item['slug'],
+				'post_content' => $item['content'],
+				'post_status'  => 'publish',
+				'post_date'    => $item['date'],
 			)
 		);
 	}
 
 	update_option( 'cobalt_logistics_news_column_seeded', '1' );
 }
-add_action( 'init', 'cobalt_logistics_seed_news_column_posts', 24 );
+add_action( 'init', 'cobalt_logistics_seed_news_column_posts', 22 );
 
 /**
  * Custom admin list columns for the `inquiry` post type: name (title),
@@ -1046,11 +1130,20 @@ add_action( 'wp_login', 'cobalt_logistics_log_login', 10, 2 );
 
 /**
  * Log job/news/column edits via `save_post`. Excludes autosaves/revisions,
- * and only logs the `job` and `post` (news/column) post types — explicitly
- * NOT `activity_log` itself (would infinite-loop: logging an edit would
- * create a new activity_log post, which would itself fire save_post...) and
- * NOT `inquiry` (internal submission data, not staff-authored content), per
- * STAFF_AUTH_BRIEF.md's noise/loop-prevention requirement.
+ * and only logs the `job`, `news_article`, `column_article`, and `post`
+ * post types — explicitly NOT `activity_log` itself (would infinite-loop:
+ * logging an edit would create a new activity_log post, which would itself
+ * fire save_post...) and NOT `inquiry` (internal submission data, not
+ * staff-authored content), per STAFF_AUTH_BRIEF.md's noise/loop-prevention
+ * requirement.
+ *
+ * `news_article`/`column_article` were added here by
+ * NEWS_COLUMN_CPT_MIGRATION_BRIEF.md #9 (replacing `post`+category as the
+ * news/column storage — see cobalt_logistics_register_news_article_cpt())
+ * so that editing お知らせ/コラム content keeps showing up in the activity
+ * log exactly as it did before the migration; `post` itself is left in the
+ * list too since nothing in that brief asked for logging of plain posts to
+ * be removed.
  *
  * Also excludes `post_status === 'auto-draft'`: WordPress core's dashboard
  * "Quick Draft" widget silently creates an empty auto-draft `post`-type post
@@ -1073,7 +1166,7 @@ function cobalt_logistics_log_post_edit( $post_id, $post, $update ) {
 		return;
 	}
 
-	if ( ! in_array( $post->post_type, array( 'job', 'post' ), true ) ) {
+	if ( ! in_array( $post->post_type, array( 'job', 'news_article', 'column_article', 'post' ), true ) ) {
 		return;
 	}
 

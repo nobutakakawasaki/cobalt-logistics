@@ -2,9 +2,11 @@
 /**
  * Template Name: お知らせ
  *
- * Listing page for the `news` category (post_type=post). Cards show
+ * Listing page for the `news_article` custom post type (see
+ * NEWS_COLUMN_CPT_MIGRATION_BRIEF.md — replaces the original `post` +
+ * `news` category query from NEWS_COLUMN_BRIEF.md). Cards show
  * date + title + excerpt + "続きを読む" link, styled to match the existing
- * .job-card look (see NEWS_COLUMN_BRIEF.md).
+ * .job-card look.
  *
  * @package Cobalt_Logistics
  */
@@ -27,7 +29,7 @@ get_header();
 			<?php
 			$cobalt_news_query = new WP_Query(
 				array(
-					'category_name'  => 'news',
+					'post_type'      => 'news_article',
 					'post_status'    => 'publish',
 					'posts_per_page' => -1,
 					'orderby'        => 'date',
