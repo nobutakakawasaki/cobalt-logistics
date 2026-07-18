@@ -338,6 +338,8 @@
 		var routeLength = routePath.getTotalLength();
 		var routeDurationMs = 9000; // one full loop along the path
 		var routeStartTime = null;
+		var routeFrameId = null;
+		var routePausedAt = null;
 
 		function animateRouteDot( timestamp ) {
 			if ( routeStartTime === null ) {
@@ -348,10 +350,35 @@
 			var point = routePath.getPointAtLength( progress * routeLength );
 			routeDot.setAttribute( 'cx', point.x );
 			routeDot.setAttribute( 'cy', point.y );
-			requestAnimationFrame( animateRouteDot );
+			routeFrameId = requestAnimationFrame( animateRouteDot );
 		}
 
-		requestAnimationFrame( animateRouteDot );
+		routeFrameId = requestAnimationFrame( animateRouteDot );
+
+		// This loop has no natural stopping point (unlike the hero blobs,
+		// which park themselves once settled) — it's a permanent ambient
+		// loop for as long as the HOME page is open. Left unpaused, a
+		// tab sitting open and backgrounded/minimized for hours keeps
+		// ticking it at 60fps the whole time for zero visible benefit;
+		// this is very likely what a long-lived background tab of this
+		// page would show up as in Activity Monitor. Pause on hide,
+		// resume on show — shifting routeStartTime by the paused
+		// duration so the dot continues from where it left off instead
+		// of jumping.
+		document.addEventListener( 'visibilitychange', function () {
+			if ( document.hidden ) {
+				if ( routeFrameId !== null ) {
+					cancelAnimationFrame( routeFrameId );
+					routeFrameId = null;
+					routePausedAt = performance.now();
+				}
+			} else if ( routeFrameId === null && routePausedAt !== null ) {
+				var pausedDuration = performance.now() - routePausedAt;
+				routeStartTime += pausedDuration;
+				routePausedAt = null;
+				routeFrameId = requestAnimationFrame( animateRouteDot );
+			}
+		} );
 	}
 
 	// Scroll reveal: the hero manifest stats and the 沿革 timeline items
