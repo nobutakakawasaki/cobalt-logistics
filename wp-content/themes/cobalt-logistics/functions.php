@@ -1148,18 +1148,14 @@ function cobalt_logistics_render_dashboard_widget() {
 /**
  * Google Analytics 4 (gtag.js) integration.
  *
- * This is a local Docker demo with no real public traffic, so there is no
- * real GA4 property to point at yet — COBALT_LOGISTICS_GA_MEASUREMENT_ID is
- * a placeholder. To activate real analytics on an actual deployment:
- *   1. Create a GA4 property at https://analytics.google.com (Google
- *      account required — this can't be done from here).
- *   2. Replace the placeholder below with the real Measurement ID
- *      (format "G-XXXXXXXXXX", shown in GA4's Admin > Data Streams).
- * Until a real ID is set, the tracking script is not enqueued at all —
- * no point loading a script that would only fail against a fake ID, and
- * it avoids sending any request to Google from this local environment.
+ * Real GA4 property created 2026-07-18 for this demo (stream URL set to a
+ * placeholder https://example.com at creation time since GA4 rejects
+ * "localhost" as a stream URL — update it in GA4 Admin > Data Streams once
+ * this site has a real public domain). Measurement ID below is real; the
+ * `G-XXXXXXXXXX` fallback check stays in place as a safety net in case this
+ * ever gets reset back to a placeholder.
  */
-define( 'COBALT_LOGISTICS_GA_MEASUREMENT_ID', 'G-XXXXXXXXXX' );
+define( 'COBALT_LOGISTICS_GA_MEASUREMENT_ID', 'G-FX88E8JYPV' );
 
 function cobalt_logistics_analytics() {
 	if ( 'G-XXXXXXXXXX' === COBALT_LOGISTICS_GA_MEASUREMENT_ID ) {
