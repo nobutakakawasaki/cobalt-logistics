@@ -46,7 +46,7 @@ get_header();
 		</svg>
 		<div class="hero__inner">
 			<div class="hero__content">
-				<h1 class="hero__title">物流の"面倒"を、まるごと引き受ける。</h1>
+				<h1 class="hero__title">物流の「面倒」を、<br>まるごと引き受ける。</h1>
 				<p class="hero__lead">入庫から出荷まで。EC事業者の物流を、コバルト物流がワンストップで支えます。</p>
 				<div class="hero__buttons">
 					<a class="btn btn--primary" href="#contact">資料請求はこちら</a>
@@ -162,7 +162,7 @@ get_header();
 	<section class="section">
 		<div class="container">
 			<div class="cta-banner">
-				<h2 class="cta-banner__title">一緒に物流の"当たり前"を支えませんか</h2>
+				<h2 class="cta-banner__title">一緒に物流の「当たり前」を支えませんか</h2>
 				<a class="btn btn--primary" href="<?php echo esc_url( cobalt_logistics_page_url( 'recruit' ) ); ?>">採用情報を見る</a>
 			</div>
 		</div>

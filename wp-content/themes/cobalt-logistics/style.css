@@ -4,7 +4,7 @@ Theme URI: https://example.com/cobalt-logistics
 Author: 5kimac
 Author URI: https://example.com
 Description: コバルト物流株式会社 コーポレートサイト用クラシックPHPテーマ（架空クライアント想定のポートフォリオデモ制作）。
-Version: 1.11.1
+Version: 1.11.2
 License: GNU General Public License v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: cobalt-logistics
@@ -466,6 +466,8 @@ button {
 	font-size: clamp(2.1rem, 5.5vw, 3.4rem);
 	margin-bottom: 20px;
 	text-shadow: 0 1px 3px rgba(6, 26, 64, 0.55), 0 4px 18px rgba(6, 26, 64, 0.35);
+	word-break: keep-all;
+	overflow-wrap: break-word;
 }
 
 .hero__lead {

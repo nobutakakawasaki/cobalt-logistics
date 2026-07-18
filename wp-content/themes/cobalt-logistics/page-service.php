@@ -24,7 +24,7 @@ get_header();
 				<div class="service-detail__icon"><?php cobalt_logistics_icon( 'box' ); ?></div>
 				<div>
 					<h2 class="service-detail__title">EC物流代行</h2>
-					<p class="service-detail__text">受注データ連携から梱包・発送・返品対応まで、EC運営の"物流業務"を一括代行します。主要ASPカート・モールとのシステム連携に対応。</p>
+					<p class="service-detail__text">受注データ連携から梱包・発送・返品対応まで、EC運営の「物流業務」を一括代行します。主要ASPカート・モールとのシステム連携に対応。</p>
 				</div>
 				<div class="service-detail__media">
 					<img
