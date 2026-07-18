@@ -86,6 +86,21 @@ for entry in "${PAGES[@]}"; do
 	fi
 	new_id=$($WP post create --post_type=page --post_title="$title" --post_name="$slug" --post_status=publish --porcelain)
 	$WP post meta update "$new_id" _wp_page_template "$template" > /dev/null
+
+	# news/column render their content by querying `post`-type entries in
+	# the matching category (see page-news.php/page-column.php) -- these
+	# two pages' own post_content is never output on the front end. A real
+	# editor opening "コラム"/"お知らせ" in Pages and typing directly into
+	# it (a very natural thing to try) gets no error and no visual feedback
+	# that nothing happened -- confirmed this is exactly what happened
+	# during manual testing. Seed a visible in-editor note instead of
+	# leaving it blank, so the confusion can't repeat.
+	if [ "$slug" = "news" ]; then
+		$WP post update "$new_id" --post_content='<!-- wp:paragraph --><p><strong>お知らせ：この本文欄は画面には表示されません。</strong></p><!-- /wp:paragraph --><!-- wp:paragraph --><p>「お知らせ」ページ（/news/）は、実際には「投稿」の中で「お知らせ」カテゴリーが付いた記事を自動的に一覧表示する仕組みになっています。ここに書いた文章はサイトには反映されません。</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>新しいお知らせ記事を追加するには：<br>左メニューの「投稿」→「新規追加」から記事を作成し、右側の「カテゴリー」欄で「お知らせ」にチェックを入れて公開してください。</p><!-- /wp:paragraph -->' > /dev/null
+	elif [ "$slug" = "column" ]; then
+		$WP post update "$new_id" --post_content='<!-- wp:paragraph --><p><strong>お知らせ：この本文欄は画面には表示されません。</strong></p><!-- /wp:paragraph --><!-- wp:paragraph --><p>「コラム」ページ（/column/）は、実際には「投稿」の中で「コラム」カテゴリーが付いた記事を自動的に一覧表示する仕組みになっています。ここに書いた文章はサイトには反映されません。</p><!-- /wp:paragraph --><!-- wp:paragraph --><p>新しいコラム記事を追加するには：<br>左メニューの「投稿」→「新規追加」から記事を作成し、右側の「カテゴリー」欄で「コラム」にチェックを入れて公開してください。</p><!-- /wp:paragraph -->' > /dev/null
+	fi
+
 	echo "    - created $slug (ID $new_id)"
 done
 
