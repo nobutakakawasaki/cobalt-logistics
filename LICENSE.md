@@ -1,6 +1,6 @@
 # ライセンス / License
 
-Copyright (c) 2026 5kimac (nobutakakawasaki). All rights reserved.
+Copyright (c) 2026 5kimac (nosunosukawa). All rights reserved.
 
 ## 日本語
 
@@ -19,7 +19,7 @@ Copyright (c) 2026 5kimac (nobutakakawasaki). All rights reserved.
 
 ## English
 
-Copyright (c) 2026 5kimac (nobutakakawasaki). All rights reserved.
+Copyright (c) 2026 5kimac (nosunosukawa). All rights reserved.
 
 This repository is published for the purpose of showcasing and evaluating
 the author's portfolio work. Viewing the source code is permitted, but
