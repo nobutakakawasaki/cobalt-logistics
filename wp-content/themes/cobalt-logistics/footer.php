@@ -24,6 +24,8 @@
 							'recruit'    => '採用情報',
 							'company'    => '会社概要',
 							'warehouse'  => '倉庫概要',
+							'news'       => 'お知らせ',
+							'column'     => 'コラム',
 							'faq'        => 'FAQ',
 							'privacy'    => 'プライバシーポリシー',
 						);

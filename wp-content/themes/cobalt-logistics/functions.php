@@ -47,30 +47,73 @@ function cobalt_logistics_scripts() {
 add_action( 'wp_enqueue_scripts', 'cobalt_logistics_scripts' );
 
 /**
- * Per-page meta description + Open Graph/Twitter Card tags. Descriptions are
- * hand-written per page slug rather than auto-excerpted, since these are
- * static corporate pages with no post content to summarize from.
+ * Truncate a post's body to a plain-text excerpt for card listings and meta
+ * descriptions. Prefers a manually-set excerpt (`get_the_excerpt()`), and
+ * otherwise auto-generates one from the start of the content — per
+ * NEWS_COLUMN_BRIEF.md ("get_the_excerpt()、無ければ本文冒頭を自動生成").
+ * Uses mb_substr() character truncation rather than WordPress's default
+ * wp_trim_words() (word-based, i.e. whitespace-based) because Japanese text
+ * has no spaces between words and trims unpredictably with it.
+ *
+ * @param int|WP_Post $post   Post ID or object.
+ * @param int         $length Max character length before truncation.
+ * @return string Plain-text excerpt, truncated with a trailing "…" if cut.
  */
-function cobalt_logistics_meta_tags() {
-	if ( ! is_page() ) {
-		return;
+function cobalt_logistics_article_excerpt( $post, $length = 88 ) {
+	$post = get_post( $post );
+	if ( ! $post ) {
+		return '';
 	}
 
-	$descriptions = array(
-		'home'      => 'EC物流代行・倉庫保管・輸配送手配・流通加工を一括サポート。導入企業180社以上のコバルト物流株式会社が、物流の"面倒"をまるごと引き受けます。',
-		'service'   => 'EC物流代行、倉庫保管・在庫管理、輸配送手配、流通加工まで。コバルト物流のサービス内容と概算料金シミュレーターをご紹介します。',
-		'recruit'   => 'コバルト物流の採用情報。倉庫内オペレーション、物流管理職、配送コーディネーターなど、未経験からでも活躍できる仲間を募集しています。',
-		'company'   => 'コバルト物流株式会社の会社概要。設立・資本金・代表者・事業内容・沿革など、企業情報をまとめてご紹介します。',
-		'warehouse' => '神奈川県横浜市の自社倉庫をご紹介。延床面積12,000坪、WMS完備、温湿度管理エリアなど倉庫設備の詳細と見学のお申し込みはこちら。',
-		'faq'       => 'コバルト物流のサービスに関するよくあるご質問。小ロット対応、契約期間、配送エリア、システム連携などについてお答えします。',
-		'privacy'   => 'コバルト物流株式会社のプライバシーポリシー。個人情報の利用目的、第三者提供の制限、管理体制について定めています。',
-	);
+	if ( '' !== trim( $post->post_excerpt ) ) {
+		$text = wp_strip_all_tags( $post->post_excerpt );
+	} else {
+		$text = wp_strip_all_tags( strip_shortcodes( $post->post_content ) );
+		$text = preg_replace( '/\s+/u', '', $text );
+	}
 
-	global $post;
-	$slug        = $post ? $post->post_name : '';
-	$description = isset( $descriptions[ $slug ] ) ? $descriptions[ $slug ] : $descriptions['home'];
-	$title       = is_front_page() ? get_bloginfo( 'name' ) . ' – EC物流代行・倉庫保管・輸配送手配・流通加工' : get_the_title() . ' – ' . get_bloginfo( 'name' );
-	$image       = get_template_directory_uri() . '/assets/images/facility-exterior.jpg';
+	if ( mb_strlen( $text ) <= $length ) {
+		return $text;
+	}
+
+	return mb_substr( $text, 0, $length ) . '…';
+}
+
+/**
+ * Per-page meta description + Open Graph/Twitter Card tags. Static pages
+ * (home/service/recruit/etc., including the news/column listing pages) use
+ * hand-written per-slug descriptions since they have no post content to
+ * summarize from. Individual news/column articles (post_type=post,
+ * single.php) instead get an auto-generated description from their own
+ * content via cobalt_logistics_article_excerpt().
+ */
+function cobalt_logistics_meta_tags() {
+	if ( is_page() ) {
+		$descriptions = array(
+			'home'      => 'EC物流代行・倉庫保管・輸配送手配・流通加工を一括サポート。導入企業180社以上のコバルト物流株式会社が、物流の"面倒"をまるごと引き受けます。',
+			'service'   => 'EC物流代行、倉庫保管・在庫管理、輸配送手配、流通加工まで。コバルト物流のサービス内容と概算料金シミュレーターをご紹介します。',
+			'recruit'   => 'コバルト物流の採用情報。倉庫内オペレーション、物流管理職、配送コーディネーターなど、未経験からでも活躍できる仲間を募集しています。',
+			'company'   => 'コバルト物流株式会社の会社概要。設立・資本金・代表者・事業内容・沿革など、企業情報をまとめてご紹介します。',
+			'warehouse' => '神奈川県横浜市の自社倉庫をご紹介。延床面積12,000坪、WMS完備、温湿度管理エリアなど倉庫設備の詳細と見学のお申し込みはこちら。',
+			'faq'       => 'コバルト物流のサービスに関するよくあるご質問。小ロット対応、契約期間、配送エリア、システム連携などについてお答えします。',
+			'privacy'   => 'コバルト物流株式会社のプライバシーポリシー。個人情報の利用目的、第三者提供の制限、管理体制について定めています。',
+			'news'      => 'コバルト物流株式会社からのお知らせ一覧。設備投資、体制強化、休業案内など最新情報をお届けします。',
+			'column'    => 'コバルト物流が発信するコラム。EC物流のアウトソーシング、在庫管理、繁忙期対策、物流コストの可視化など、事業成長に役立つノウハウをご紹介します。',
+		);
+
+		global $post;
+		$slug        = $post ? $post->post_name : '';
+		$description = isset( $descriptions[ $slug ] ) ? $descriptions[ $slug ] : $descriptions['home'];
+		$title       = is_front_page() ? get_bloginfo( 'name' ) . ' – EC物流代行・倉庫保管・輸配送手配・流通加工' : get_the_title() . ' – ' . get_bloginfo( 'name' );
+		$image       = get_template_directory_uri() . '/assets/images/facility-exterior.jpg';
+	} elseif ( is_singular( 'post' ) ) {
+		global $post;
+		$description = cobalt_logistics_article_excerpt( $post, 120 );
+		$title       = get_the_title( $post ) . ' – ' . get_bloginfo( 'name' );
+		$image       = get_template_directory_uri() . '/assets/images/facility-exterior.jpg';
+	} else {
+		return;
+	}
 
 	echo '<meta name="description" content="' . esc_attr( $description ) . '">' . "\n";
 	echo '<meta property="og:type" content="website">' . "\n";
@@ -337,6 +380,210 @@ function cobalt_logistics_seed_jobs() {
 	update_option( 'cobalt_logistics_jobs_seeded', '1' );
 }
 add_action( 'init', 'cobalt_logistics_seed_jobs', 21 );
+
+/**
+ * Create the `news`/`column` categories used by the news/column feature
+ * (NEWS_COLUMN_BRIEF.md). Idempotent — checks term_exists() first — and
+ * runs on every `init`, matching the pattern already used for the `job`
+ * CPT's rewrite-flush guard above. Unlike that guard this doesn't need its
+ * own option flag: wp_insert_term()/term_exists() are cheap term-table
+ * lookups, not the expensive full rewrite-rule rebuild flush_rewrite_rules()
+ * does, so there's no performance reason to gate it behind a one-time flag.
+ */
+function cobalt_logistics_seed_news_column_categories() {
+	if ( ! term_exists( 'news', 'category' ) ) {
+		wp_insert_term( 'お知らせ', 'category', array( 'slug' => 'news' ) );
+	}
+	if ( ! term_exists( 'column', 'category' ) ) {
+		wp_insert_term( 'コラム', 'category', array( 'slug' => 'column' ) );
+	}
+}
+add_action( 'init', 'cobalt_logistics_seed_news_column_categories', 23 );
+
+/**
+ * Seed the 5 news posts + 4 column posts once, on first run. Same rationale
+ * and pattern as cobalt_logistics_seed_jobs() above: this is the real
+ * content source of truth, committed as PHP, not a one-off DB-only script —
+ * that gap is exactly what broke the `job` feature's reproducibility before
+ * it was fixed. Guarded by an option flag (no-op after first successful
+ * run) and additionally idempotent per-post via get_page_by_path()
+ * (post_type-aware), so re-running with existing slugs never duplicates.
+ * Runs at priority 24, after cobalt_logistics_seed_news_column_categories()
+ * (23) in the same `init` hook, so the category terms already exist.
+ */
+function cobalt_logistics_seed_news_column_posts() {
+	if ( get_option( 'cobalt_logistics_news_column_seeded' ) ) {
+		return;
+	}
+
+	$news_term   = get_term_by( 'slug', 'news', 'category' );
+	$column_term = get_term_by( 'slug', 'column', 'category' );
+
+	if ( ! $news_term || ! $column_term ) {
+		// Categories aren't in place yet — bail without setting the seeded
+		// flag so this retries on a later request instead of seeding posts
+		// with no category.
+		return;
+	}
+
+	$news_items = array(
+		array(
+			'slug'    => 'warehouse-capacity-expansion',
+			'title'   => '倉庫設備増強のお知らせ',
+			'date'    => '2026-07-16 10:00:00',
+			'content' => '横浜本社倉庫の保管スペースを増床し、対応可能な商材の幅を拡大いたしました。今後もお客様のニーズに応じた設備投資を継続してまいります。',
+		),
+		array(
+			'slug'    => 'information-security-enhancement',
+			'title'   => '情報セキュリティ体制強化についてのお知らせ',
+			'date'    => '2026-07-10 10:00:00',
+			'content' => 'お客様の個人情報・データをお預かりする企業として、社内の情報セキュリティ管理体制を見直し、全社員を対象としたセキュリティ研修を必須化いたしました。今後も安心してご利用いただける体制づくりに努めてまいります。',
+		),
+		array(
+			'slug'    => 'summer-holiday-notice',
+			'title'   => '夏季休業のお知らせ',
+			'date'    => '2026-06-25 10:00:00',
+			'content' => '誠に勝手ながら、8月13日（木）〜8月16日（日）は夏季休業とさせていただきます。休業期間中にいただいたお問い合わせにつきましては、8月17日（月）以降順次対応いたします。',
+		),
+		array(
+			'slug'    => 'wms-system-update',
+			'title'   => 'WMS（倉庫管理システム）アップデートのお知らせ',
+			'date'    => '2026-06-12 10:00:00',
+			'content' => '在庫可視化の精度向上を目的に、倉庫管理システム（WMS）のアップデートを実施いたしました。これにより、在庫反映のリアルタイム性がさらに向上しております。',
+		),
+		array(
+			'slug'    => 'media-feature',
+			'title'   => '物流業界メディアへの掲載について',
+			'date'    => '2026-05-28 10:00:00',
+			'content' => '弊社の物流オペレーションにおける取り組みが、物流業界の専門メディアにて紹介されました。今後も業界の発展に貢献できるよう努めてまいります。',
+		),
+	);
+
+	$column_items = array(
+		array(
+			'slug'    => 'ec-logistics-outsourcing-tips',
+			'title'   => 'EC物流のアウトソーシングで失敗しないための3つのポイント',
+			'date'    => '2026-07-15 10:00:00',
+			'content' => <<<'TXT'
+EC事業の成長にともない、自社で物流をまかなうことが難しくなり、外部の物流代行会社への委託（アウトソーシング）を検討する事業者が増えています。一方で、「委託したものの思ったような効果が出なかった」という声も少なくありません。ここでは、物流アウトソーシングで失敗しないための3つのポイントをご紹介します。
+
+【1. 繁忙期の対応力を事前に確認する】
+月間の出荷件数だけでなく、セールや年末年始などの繁忙期にどこまで対応できるかは、委託先選びの重要な判断材料です。平常時のオペレーションは問題なくても、繁忙期に出荷遅延が発生すれば、顧客満足度に直結します。
+
+【2. システム連携の柔軟性を見る】
+自社が使っているECカート・モールと物流会社のシステムがスムーズに連携できるかどうかは、日々の運用効率を大きく左右します。API連携の実績や対応範囲は、契約前に必ず確認しておきたいポイントです。
+
+【3. コミュニケーションの取りやすさ】
+物流は「任せたら終わり」ではなく、継続的な改善が必要な業務です。在庫状況や出荷トラブルについて、迅速かつ的確に報告・相談できる体制があるかどうかも、長く付き合えるパートナーかどうかの目安になります。
+
+物流アウトソーシングは、正しく選べば事業成長の強力な後押しになります。まずは自社の課題を整理し、複数の会社を比較検討することから始めてみてください。
+TXT,
+		),
+		array(
+			'slug'    => 'warehouse-location-management-basics',
+			'title'   => '倉庫の保管効率を上げるロケーション管理の基本',
+			'date'    => '2026-07-01 10:00:00',
+			'content' => <<<'TXT'
+倉庫内の「どこに何を置くか」を管理する仕組みを、ロケーション管理と呼びます。ロケーション管理が甘いと、ピッキングに時間がかかったり、誤出荷が発生しやすくなったりと、物流コスト全体に悪影響を及ぼします。
+
+【出荷頻度に応じた配置を見直す】
+出荷頻度の高い商品を作業動線の近くに、頻度の低い商品を奥や上段に配置する「ABC分析」に基づいたレイアウト設計は、ピッキング効率を大きく改善します。
+
+【ロケーションコードを統一する】
+棚番号や商品コードのルールが現場ごとにバラバラだと、システム化した際にミスが起きやすくなります。導入初期にコード体系を統一しておくことが、後々の運用効率を左右します。
+
+【WMSでリアルタイムに可視化する】
+在庫の位置情報をWMS（倉庫管理システム）でリアルタイムに把握できると、棚卸の手間が減るだけでなく、欠品・過剰在庫の早期発見にもつながります。
+
+ロケーション管理は地味に見えて、物流品質を左右する土台の部分です。定期的な見直しを習慣化することをおすすめします。
+TXT,
+		),
+		array(
+			'slug'    => 'peak-season-shipping-delay-prevention',
+			'title'   => '繁忙期の出荷遅延を防ぐには？物流会社が教える対策',
+			'date'    => '2026-06-18 10:00:00',
+			'content' => <<<'TXT'
+セールシーズンや年末年始など、EC事業には出荷量が急増する「繁忙期」がつきものです。繁忙期の出荷遅延は、顧客からの信頼低下に直結するため、事前の備えが欠かせません。
+
+【需要予測を早めに共有する】
+物流会社側は、事前にどれだけの出荷量が見込まれるかを把握できて初めて、人員やスペースの調整が可能になります。過去の実績データをもとに、繁忙期の2〜3ヶ月前には見込み数量を共有することが理想的です。
+
+【梱包資材は余裕を持って確保する】
+繁忙期は業界全体で梱包資材の需要が高まり、調達が難しくなることがあります。必要な資材は早めに手配し、在庫切れによる出荷ストップを防ぎましょう。
+
+【一時的な増員体制を確認しておく】
+自社物流の場合、繁忙期だけ人員を増やすのは容易ではありません。3PL（物流アウトソーシング）を活用している場合は、委託先が繁忙期の増員体制を持っているかを事前に確認しておくと安心です。
+
+繁忙期対応の巧拙は、物流会社選びの大きな分かれ目になります。日頃からのコミュニケーションが、いざという時の対応力を左右します。
+TXT,
+		),
+		array(
+			'slug'    => 'logistics-cost-kpi',
+			'title'   => '物流コストを可視化する — KPI設定の考え方',
+			'date'    => '2026-06-05 10:00:00',
+			'content' => <<<'TXT'
+「物流コストが高い気がするが、何が原因か分からない」という声をよく聞きます。物流コストを適切にコントロールするための第一歩は、コストを構成する要素を分解し、KPI（重要業績評価指標）として可視化することです。
+
+【代表的な物流KPIの例】
+・出荷1件あたりのコスト
+・誤出荷率
+・在庫回転率
+・出荷リードタイム
+
+これらを月次で数値化するだけでも、どこにボトルネックがあるかが見えてきます。
+
+【「コストを下げる」より「コストの構造を理解する」】
+KPIを見る目的は、単純にコストを下げることだけではありません。保管コストを多少上げてでも出荷リードタイムを短縮した方が、結果的に売上増につながるケースもあります。自社のビジネスモデルに照らして、どのKPIを優先すべきかを見極めることが重要です。
+
+【物流会社とKPIを共有する】
+物流を外部委託している場合、これらのKPIを物流会社と定期的に共有し、一緒に改善策を検討できる関係性を築けると、コスト最適化のスピードが大きく変わります。
+
+数字で物流を語れるようになることが、事業成長を支える物流体制づくりの第一歩です。
+TXT,
+		),
+	);
+
+	foreach ( $news_items as $item ) {
+		$existing = get_page_by_path( $item['slug'], OBJECT, 'post' );
+		if ( $existing ) {
+			continue;
+		}
+
+		wp_insert_post(
+			array(
+				'post_type'     => 'post',
+				'post_title'    => $item['title'],
+				'post_name'     => $item['slug'],
+				'post_content'  => $item['content'],
+				'post_status'   => 'publish',
+				'post_date'     => $item['date'],
+				'post_category' => array( $news_term->term_id ),
+			)
+		);
+	}
+
+	foreach ( $column_items as $item ) {
+		$existing = get_page_by_path( $item['slug'], OBJECT, 'post' );
+		if ( $existing ) {
+			continue;
+		}
+
+		wp_insert_post(
+			array(
+				'post_type'     => 'post',
+				'post_title'    => $item['title'],
+				'post_name'     => $item['slug'],
+				'post_content'  => $item['content'],
+				'post_status'   => 'publish',
+				'post_date'     => $item['date'],
+				'post_category' => array( $column_term->term_id ),
+			)
+		);
+	}
+
+	update_option( 'cobalt_logistics_news_column_seeded', '1' );
+}
+add_action( 'init', 'cobalt_logistics_seed_news_column_posts', 24 );
 
 /**
  * Custom admin list columns for the `inquiry` post type: name (title),
