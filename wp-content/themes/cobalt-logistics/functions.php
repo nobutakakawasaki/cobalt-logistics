@@ -1144,3 +1144,35 @@ function cobalt_logistics_render_dashboard_widget() {
 	echo '</tbody></table>';
 	wp_reset_postdata();
 }
+
+/**
+ * Google Analytics 4 (gtag.js) integration.
+ *
+ * This is a local Docker demo with no real public traffic, so there is no
+ * real GA4 property to point at yet — COBALT_LOGISTICS_GA_MEASUREMENT_ID is
+ * a placeholder. To activate real analytics on an actual deployment:
+ *   1. Create a GA4 property at https://analytics.google.com (Google
+ *      account required — this can't be done from here).
+ *   2. Replace the placeholder below with the real Measurement ID
+ *      (format "G-XXXXXXXXXX", shown in GA4's Admin > Data Streams).
+ * Until a real ID is set, the tracking script is not enqueued at all —
+ * no point loading a script that would only fail against a fake ID, and
+ * it avoids sending any request to Google from this local environment.
+ */
+define( 'COBALT_LOGISTICS_GA_MEASUREMENT_ID', 'G-XXXXXXXXXX' );
+
+function cobalt_logistics_analytics() {
+	if ( 'G-XXXXXXXXXX' === COBALT_LOGISTICS_GA_MEASUREMENT_ID ) {
+		return;
+	}
+	?>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr( COBALT_LOGISTICS_GA_MEASUREMENT_ID ); ?>"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+		gtag('config', '<?php echo esc_js( COBALT_LOGISTICS_GA_MEASUREMENT_ID ); ?>');
+	</script>
+	<?php
+}
+add_action( 'wp_head', 'cobalt_logistics_analytics', 5 );
