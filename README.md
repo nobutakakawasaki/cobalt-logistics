@@ -86,7 +86,8 @@ wp-content/themes/cobalt-logistics/
   page-home.php / page-service.php / page-recruit.php / page-company.php
   page-warehouse.php / page-faq.php / page-privacy.php
   page-news.php / page-column.php / page-staff-register.php / page-staff-login.php
-  single.php                          # お知らせ・コラム共通の個別記事テンプレート
+  single-news_article.php             # お知らせ個別記事テンプレート
+  single-column_article.php           # コラム個別記事テンプレート
   single-job.php                      # 求人詳細テンプレート
   404.php
   inc/icons.php                       # インラインSVGアイコンヘルパー
@@ -106,6 +107,13 @@ docker compose up -d
              # メニュー設定までを自動で行う（再実行しても安全＝冪等）
 # http://localhost:8080 で確認
 ```
+
+## 関連ドキュメント
+
+- [SPECIFICATION.md](SPECIFICATION.md) — 技術仕様書
+- [MANUAL.md](MANUAL.md) — 運用マニュアル
+- [PRICING.md](PRICING.md) — 価格の考え方
+- [LICENSE.md](LICENSE.md) — ライセンス（無断転載・複製禁止、閲覧目的のみ）
 
 管理画面: `http://localhost:8080/wp-admin/`（admin / admin_pass_2026）。
 求人・お知らせ・コラムの記事は、`functions.php` のフックによって初回アクセス時に
